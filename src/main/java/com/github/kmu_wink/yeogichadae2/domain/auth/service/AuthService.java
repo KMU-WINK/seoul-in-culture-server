@@ -1,5 +1,7 @@
 package com.github.kmu_wink.yeogichadae2.domain.auth.service;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 
 import com.github.kmu_wink.yeogichadae2.common.auth.JwtUtil;
@@ -34,18 +36,12 @@ public class AuthService {
 
     public LoginResponse login(LoginRequest request) {
         String kakaoAccessToken = getKakaoAccessToken(request.token());
-        JSONObject kakaoUserInfo = getKakaoUserInfo(kakaoAccessToken);
+        long kakaoUserInfo = getKakaoUserInfo(kakaoAccessToken);
 
-        User user = userRepository.findById(kakaoUserInfo.getLong("id")).orElseGet(() ->
+        User user = userRepository.findByKakao(kakaoUserInfo).orElseGet(() ->
             User.builder()
-                .id(kakaoUserInfo.getLong("id"))
-                .name(kakaoUserInfo.getJSONObject("kakao_account").getString("name"))
-                .nickname(kakaoUserInfo.getJSONObject("kakao_account").getString("name"))
-                .avatar(null)
-                .phoneNumber(kakaoUserInfo.getJSONObject("kakao_account").getString("phone_number"))
-                .district(null)
-                .gender(User.Gender.valueOf(kakaoUserInfo.getJSONObject("kakao_account").getString("gender").toUpperCase()))
-                .birthYear(Integer.parseInt(kakaoUserInfo.getJSONObject("kakao_account").getString("birthyear")))
+                .kakao(kakaoUserInfo)
+                .nickname(generateRandomNickname())
                 .mannerScore(36.5f)
                 .build());
 
@@ -99,14 +95,26 @@ public class AuthService {
         }
     }
 
-    private JSONObject getKakaoUserInfo(String accessToken) {
+    private long getKakaoUserInfo(String accessToken) {
         try (UnirestInstance instance = Unirest.spawnInstance()) {
 
             return instance.get("https://kapi.kakao.com/v2/user/me")
                 .header("Authorization", "Bearer " + accessToken)
                 .asJson()
                 .getBody()
-                .getObject();
+                .getObject()
+                .getLong("id");
         }
+    }
+
+    private String generateRandomNickname() {
+
+        String nickname;
+
+        do {
+            nickname = UUID.randomUUID().toString().split("-")[0];
+        } while (userRepository.existsByNickname(nickname));
+
+        return nickname;
     }
 }

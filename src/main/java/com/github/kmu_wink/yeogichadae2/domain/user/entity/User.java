@@ -1,7 +1,10 @@
 package com.github.kmu_wink.yeogichadae2.domain.user.entity;
 
 import com.github.kmu_wink.yeogichadae2.common.BaseSchema;
+
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -14,13 +17,24 @@ import lombok.experimental.SuperBuilder;
 @Entity
 public class User extends BaseSchema {
 
-    String name;
+    @NotNull
+    long kakao;
+
+    @NotNull
     String nickname;
+
+    @Nullable
     String avatar;
-    String phoneNumber;
+
+    @Nullable
     String district;
+
+    @Nullable
     Gender gender;
-    int birthYear;
+
+    @Nullable
+    Integer birthYear;
+
     float mannerScore;
 
     public enum Gender {
