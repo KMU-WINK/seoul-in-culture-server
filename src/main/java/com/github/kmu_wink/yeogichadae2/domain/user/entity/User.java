@@ -14,5 +14,16 @@ import lombok.experimental.SuperBuilder;
 @Entity
 public class User extends BaseSchema {
 
-    long kakao;
+    String name;
+    String nickname;
+    String avatar;
+    String phoneNumber;
+    String district;
+    Gender gender;
+    int birthYear;
+    float mannerScore;
+
+    public enum Gender {
+        MALE, FEMALE
+    }
 }

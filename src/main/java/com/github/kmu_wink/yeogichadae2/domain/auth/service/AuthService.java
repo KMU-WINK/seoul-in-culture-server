@@ -1,7 +1,10 @@
 package com.github.kmu_wink.yeogichadae2.domain.auth.service;
 
+import org.springframework.stereotype.Service;
+
 import com.github.kmu_wink.yeogichadae2.common.auth.JwtUtil;
 import com.github.kmu_wink.yeogichadae2.common.exception.AuthenticationFailException;
+import com.github.kmu_wink.yeogichadae2.common.exception.InvalidRefreshTokenException;
 import com.github.kmu_wink.yeogichadae2.common.exception.KakaoAccessTokenException;
 import com.github.kmu_wink.yeogichadae2.common.property.KakaoProperty;
 import com.github.kmu_wink.yeogichadae2.domain.auth.dto.LoginRequest;
@@ -11,14 +14,13 @@ import com.github.kmu_wink.yeogichadae2.domain.auth.entity.RefreshToken;
 import com.github.kmu_wink.yeogichadae2.domain.auth.repository.RefreshTokenRedisRepository;
 import com.github.kmu_wink.yeogichadae2.domain.user.entity.User;
 import com.github.kmu_wink.yeogichadae2.domain.user.repository.UserRepository;
+
 import jakarta.validation.Valid;
 import kong.unirest.core.ContentType;
 import kong.unirest.core.Unirest;
 import kong.unirest.core.UnirestInstance;
 import kong.unirest.core.json.JSONObject;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import com.github.kmu_wink.yeogichadae2.common.exception.InvalidRefreshTokenException;
 
 @Service
 @RequiredArgsConstructor
@@ -32,9 +34,21 @@ public class AuthService {
 
     public LoginResponse login(LoginRequest request) {
         String kakaoAccessToken = getKakaoAccessToken(request.token());
-        long kakaoId = getKakaoUserInfo(kakaoAccessToken);
+        JSONObject kakaoUserInfo = getKakaoUserInfo(kakaoAccessToken);
 
-        User user = userRepository.findByKakao(kakaoId).orElseGet(() -> User.builder().kakao(kakaoId).build());
+        User user = userRepository.findById(kakaoUserInfo.getLong("id")).orElseGet(() ->
+            User.builder()
+                .id(kakaoUserInfo.getLong("id"))
+                .name(kakaoUserInfo.getJSONObject("kakao_account").getString("name"))
+                .nickname(kakaoUserInfo.getJSONObject("kakao_account").getString("name"))
+                .avatar(null)
+                .phoneNumber(kakaoUserInfo.getJSONObject("kakao_account").getString("phone_number"))
+                .district(null)
+                .gender(User.Gender.valueOf(kakaoUserInfo.getJSONObject("kakao_account").getString("gender").toUpperCase()))
+                .birthYear(Integer.parseInt(kakaoUserInfo.getJSONObject("kakao_account").getString("birthyear")))
+                .mannerScore(36.5f)
+                .build());
+
         user = userRepository.saveAndFlush(user);
 
         String accessToken = jwtUtil.generateAccessToken(user);
@@ -73,6 +87,7 @@ public class AuthService {
                     .contentType(ContentType.APPLICATION_FORM_URLENCODED)
                     .field("grant_type", "authorization_code")
                     .field("client_id", kakaoProperty.getClientId())
+                    .field("client_secret", kakaoProperty.getClientSecret())
                     .field("redirect_url", kakaoProperty.getRedirectUrl())
                     .field("code", token)
                     .asJson()
@@ -84,14 +99,14 @@ public class AuthService {
         }
     }
 
-    private long getKakaoUserInfo(String accessToken) {
+    private JSONObject getKakaoUserInfo(String accessToken) {
         try (UnirestInstance instance = Unirest.spawnInstance()) {
-            return instance.get("https://kapi.kakao.com/v1/user/access_token_info")
-                    .header("Authorization", "Bearer " + accessToken)
-                    .asJson()
-                    .getBody()
-                    .getObject()
-                    .getLong("id");
+
+            return instance.get("https://kapi.kakao.com/v2/user/me")
+                .header("Authorization", "Bearer " + accessToken)
+                .asJson()
+                .getBody()
+                .getObject();
         }
     }
 }

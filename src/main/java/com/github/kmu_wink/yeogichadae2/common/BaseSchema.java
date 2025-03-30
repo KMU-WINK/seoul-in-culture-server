@@ -18,7 +18,6 @@ import java.time.LocalDateTime;
 public abstract class BaseSchema {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     @CreatedDate

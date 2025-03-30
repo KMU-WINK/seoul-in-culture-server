@@ -14,5 +14,8 @@ public class KakaoProperty {
     private String clientId;
 
     @NotBlank
+    private String clientSecret;
+
+    @NotBlank
     private String redirectUrl;
 }
