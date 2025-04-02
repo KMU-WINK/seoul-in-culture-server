@@ -1,3 +1,27 @@
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      password: ${REDIS_PASSWORD}
+      port: ${REDIS_PORT}
+    mongodb:
+      host: ${MONGO_HOST}
+      port: ${MONGO_PORT}
+      username: ${MONGO_USERNAME}
+      password: ${MONGO_PASSWORD}
+      database: ${MONGO_DATABASE}
+      authentication-database: ${MONGO_AUTH_DATABASE}
+
+app:
+  jwt:
+    key: ${JWT_SECRET_KEY}
+    access-token-expiration-hours: 1
+    refresh-token-expiration-hours: 720
+  kakao:
+    client-id: ${KAKAO_CLIENT_ID}
+    client-secret: ${KAKAO_SECRET_ID}
+    redirect-url: ${KAKAO_REDIRECT_URL}
+
 springdoc:
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
@@ -14,13 +38,3 @@ springdoc:
     operations-sorter: alpha
   cache:
     disabled: true
-
-spring:
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        format_sql: true
-        show_sql: true
-    open-in-view: false
