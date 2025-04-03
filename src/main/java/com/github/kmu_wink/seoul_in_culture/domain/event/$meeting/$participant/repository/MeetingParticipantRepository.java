@@ -7,4 +7,6 @@ import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$participant.s
 
 @Repository
 public interface MeetingParticipantRepository extends MongoRepository<MeetingParticipant, String> {
+    int countByUserIdAndHostFalse(String userId);
+    int countByUserIdAndHostTrue(String userId);
 }
