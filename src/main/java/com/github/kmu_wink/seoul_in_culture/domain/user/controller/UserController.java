@@ -7,10 +7,7 @@ import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 import com.github.kmu_wink.seoul_in_culture.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
@@ -24,6 +21,6 @@ public class UserController {
             @RequestBody UserEditRequest request,
             @AuthenticationPrincipal User user
             ) {
-        return ApiResponse.ok(userService.editUser(user.getId(), request));
+        return ApiResponse.ok(userService.editUser(user, request));
     }
 }
