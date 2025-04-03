@@ -1,6 +1,7 @@
 package com.github.kmu_wink.seoul_in_culture.domain.user.controller;
 
 import com.github.kmu_wink.seoul_in_culture.common.api.ApiResponse;
+import com.github.kmu_wink.seoul_in_culture.domain.user.dto.MyDetailResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.user.dto.UserEditRequest;
 import com.github.kmu_wink.seoul_in_culture.domain.user.dto.UserEditResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
@@ -22,5 +23,12 @@ public class UserController {
             @AuthenticationPrincipal User user
             ) {
         return ApiResponse.ok(userService.editUser(user, request));
+    }
+
+    @GetMapping
+    public ApiResponse<MyDetailResponse> getMyDetail(
+            @AuthenticationPrincipal User user
+    ) {
+        return ApiResponse.ok(userService.getMyDetail(user));
     }
 }
