@@ -73,7 +73,7 @@ public class UserService {
                         .id(r.getId())
                         .author(
                                 AuthorDto.builder()
-                                        .createdAt(r.getAuthor().getCreatedAt().toString())
+                                        .createdAt(r.getAuthor().getCreatedAt())
                                         .avatar(r.getAuthor().getUser().getAvatar())
                                         .nickname(r.getAuthor().getUser().getNickname())
                                         .build()
