@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface BookmarkRepository extends MongoRepository<Bookmark, String> {
     List<Bookmark> findTop2ByUserIdOrderByCreatedAtDesc(String userId);
+
+    int countByUserId(String userId);
 }

@@ -3,9 +3,11 @@ package com.github.kmu_wink.seoul_in_culture.domain.user.service;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.repository.BookmarkRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.schema.Bookmark;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$participant.repository.MeetingParticipantRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$participant.schema.MeetingParticipant;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.repository.MeetingReviewRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.schema.MeetingReview;
 import com.github.kmu_wink.seoul_in_culture.domain.user.dto.*;
+import com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserNotFoundException;
 import com.github.kmu_wink.seoul_in_culture.domain.user.repository.UserRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 import lombok.RequiredArgsConstructor;
@@ -89,6 +91,57 @@ public class UserService {
                 .joinedMeeting(joinedMeetings)
                 .hostedMeeting(hostedMeetings)
                 .review(reviewDtos)
+                .build();
+    }
+
+    public OtherDetailResponse getOtherDetail(String userId) {
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+
+        UserDto userDto = UserDto.builder()
+                .id(user.getId())
+                .nickname(user.getNickname())
+                .createdAt(user.getCreatedAt())
+                .district(user.getDistrict().toString())
+                .score(getScore(user))
+                .gender(user.getGender().toString())
+                .age(calculateAge(user.getBirthYear()))
+                .build();
+
+        int bookmarkCount = bookmarkRepository.countByUserId(userId);
+        int joinedMeetings = meetingParticipantRepository.countByUserIdAndHostFalse(userId);
+
+        List<MeetingReview> recentReviews = meetingReviewRepository.findTop2ByTargetUserIdOrderByCreatedAtDesc(userId);
+        List<ReviewDto> reviewDtos = recentReviews.stream()
+                .map(r -> ReviewDto.builder()
+                        .id(r.getId())
+                        .author(AuthorDto.builder()
+                                .createdAt(r.getAuthor().getCreatedAt())
+                                .avatar(r.getAuthor().getUser().getAvatar())
+                                .nickname(r.getAuthor().getUser().getNickname())
+                                .build())
+                        .score(r.getScore())
+                        .content(r.getContent())
+                        .build())
+                .toList();
+
+        List<MeetingParticipant> hostedParticipants = meetingParticipantRepository.findAllByUserIdAndHostTrue(userId);
+        List<MeetingDto> hostedMeetingDtos = hostedParticipants.stream()
+                .map(mp -> MeetingDto.builder()
+                        .id(mp.getMeeting().getId())
+                        .event(EventDto.builder()
+                                .image(mp.getMeeting().getEvent().getImage())
+                                .build())
+                        .title(mp.getMeeting().getTitle())
+                        .createdAt(mp.getMeeting().getCreatedAt())
+                        .build())
+                .toList();
+
+        return OtherDetailResponse.builder()
+                .user(userDto)
+                .bookmark(bookmarkCount)
+                .joinedMeeting(joinedMeetings)
+                .review(reviewDtos)
+                .hostedMeeting(hostedMeetingDtos)
                 .build();
     }
 
