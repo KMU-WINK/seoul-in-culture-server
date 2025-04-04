@@ -59,8 +59,8 @@ public class UserService {
                         .category(b.getEvent().getCategory())
                         .image(b.getEvent().getImage())
                         .title(b.getEvent().getTitle())
-                        .startDate(b.getEvent().getStartDate().toString())
-                        .endDate(b.getEvent().getEndDate().toString())
+                        .startDate(b.getEvent().getStartDate())
+                        .endDate(b.getEvent().getEndDate())
                         .build())
                 .toList();
 
@@ -86,8 +86,8 @@ public class UserService {
         return MyDetailResponse.builder()
                 .user(userDto)
                 .bookmark(bookmarkDtos)
-                .joined_meeting(joinedMeetings)
-                .hosted_meeting(hostedMeetings)
+                .joinedMeeting(joinedMeetings)
+                .hostedMeeting(hostedMeetings)
                 .review(reviewDtos)
                 .build();
     }
