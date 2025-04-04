@@ -9,8 +9,8 @@ import java.util.List;
 public record MyDetailResponse(
         UserDto user,
         List<BookmarkDto> bookmark,
-        int joined_meeting,
-        int hosted_meeting,
+        int joinedMeeting,
+        int hostedMeeting,
         List<ReviewDto> review
 ) {
 }
