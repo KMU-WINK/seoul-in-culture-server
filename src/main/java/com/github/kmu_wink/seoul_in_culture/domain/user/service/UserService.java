@@ -43,7 +43,7 @@ public class UserService {
         UserDto userDto = UserDto.builder()
                 .id(user.getId())
                 .nickname(user.getNickname())
-                .createdAt(user.getCreatedAt().toString())
+                .createdAt(user.getCreatedAt())
                 .email(user.getEmail())
                 .district(user.getDistrict().toString())
                 .score(getScore(user))
