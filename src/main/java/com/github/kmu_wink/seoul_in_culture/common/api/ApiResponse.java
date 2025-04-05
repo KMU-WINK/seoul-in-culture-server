@@ -18,6 +18,10 @@ public class ApiResponse<T> {
         this.content = content;
     }
 
+    public static <T> ApiResponse<T> ok() {
+        return new ApiResponse<>(200, null, null);
+    }
+
     public static <T> ApiResponse<T> ok(T content) {
         return new ApiResponse<>(200, null, content);
     }
@@ -29,5 +33,4 @@ public class ApiResponse<T> {
     public static ApiResponse<Map<String, String>> error(ApiException exception) {
         return error(exception.getStatus(), exception.getMessage());
     }
-
 }
