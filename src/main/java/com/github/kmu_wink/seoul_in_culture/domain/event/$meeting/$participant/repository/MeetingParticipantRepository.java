@@ -13,6 +13,7 @@ import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 public interface MeetingParticipantRepository extends MongoRepository<MeetingParticipant, String> {
 
 	List<MeetingParticipant> findAllByUser(User user);
+	List<MeetingParticipant> findAllByMeeting(Meeting meeting);
 
 	boolean existsByMeetingAndUser(Meeting meeting, User user);
 }

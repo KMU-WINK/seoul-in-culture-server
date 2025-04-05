@@ -12,7 +12,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import com.github.kmu_wink.seoul_in_culture.common.api.ApiResponse;
 import com.github.kmu_wink.seoul_in_culture.common.auth.AuthGuard;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.dto.request.SendChatRequest;
-import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.dto.response.ChatListResponse;
+import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.dto.response.ChatInfoResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.dto.response.RoomListResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.dto.response.SendChatResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.service.ChatMessageService;
@@ -40,10 +40,10 @@ public class ChatMessageController {
 	}
 
 	@GetMapping("/{meetingId}")
-	@Operation(summary = "채팅 기록")
-	public ApiResponse<ChatListResponse> getChatList(@AuthenticationPrincipal User user, @PathVariable String meetingId) {
+	@Operation(summary = "채팅방 정보 보기 (채팅 기록 및 참가자)")
+	public ApiResponse<ChatInfoResponse> getChatInfo(@AuthenticationPrincipal User user, @PathVariable String meetingId) {
 
-		return ApiResponse.ok(chatMessageService.getChatList(user, meetingId));
+		return ApiResponse.ok(chatMessageService.getChatInfo(user, meetingId));
 	}
 
 	@PostMapping("/{meetingId}")

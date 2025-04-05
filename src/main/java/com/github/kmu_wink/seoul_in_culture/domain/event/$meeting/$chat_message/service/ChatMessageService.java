@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.dto.request.SendChatRequest;
-import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.dto.response.ChatListResponse;
+import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.dto.response.ChatInfoResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.dto.response.RoomListResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.dto.response.SendChatResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.exception.ChatMessageNotFoundException;
@@ -57,15 +57,20 @@ public class ChatMessageService {
 			.build();
 	}
 
-	public ChatListResponse getChatList(User user, String meetingId) {
+	public ChatInfoResponse getChatInfo(User user, String meetingId) {
 
 		Meeting meeting = meetingRepository.findById(meetingId).orElseThrow(MeetingNotFoundException::new);
 
 		if (!meetingParticipantRepository.existsByMeetingAndUser(meeting, user)) throw new NotJoiningRoomException();
 
+		List<User> participants = meetingParticipantRepository.findAllByMeeting(meeting).stream()
+			.map(MeetingParticipant::getUser)
+			.toList();
+
 		List<ChatMessage> messages = chatMessageRepository.findAllByMeeting(meeting);
 
-		return ChatListResponse.builder()
+		return ChatInfoResponse.builder()
+			.participants(participants)
 			.messages(messages)
 			.build();
 	}
