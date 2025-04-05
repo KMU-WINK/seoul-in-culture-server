@@ -1,40 +1,22 @@
 spring:
+  config:
+    import:
+      - classpath:/application.common.yaml
   data:
     redis:
       host: ${REDIS_HOST}
-      password: ${REDIS_PASSWORD}
       port: ${REDIS_PORT}
     mongodb:
       host: ${MONGO_HOST}
       port: ${MONGO_PORT}
-      username: ${MONGO_USERNAME}
-      password: ${MONGO_PASSWORD}
-      database: ${MONGO_DATABASE}
-      authentication-database: ${MONGO_AUTH_DATABASE}
+      database: ${MONGO_DB}
 
 app:
   jwt:
-    key: ${JWT_SECRET_KEY}
+    key: ${JWT_KEY}
     access-token-expiration-hours: 1
     refresh-token-expiration-hours: 720
   kakao:
     client-id: ${KAKAO_CLIENT_ID}
-    client-secret: ${KAKAO_SECRET_ID}
-    redirect-url: ${KAKAO_REDIRECT_URL}
-
-springdoc:
-  default-consumes-media-type: application/json
-  default-produces-media-type: application/json
-  api-docs:
-    groups:
-      enabled: true
-  swagger-ui:
-    path: /docs
-    disable-swagger-default-url: true
-    display-request-duration: true
-    defaultModelsExpandDepth: -1
-    groups-order: asc
-    tags-sorter: alpha
-    operations-sorter: alpha
-  cache:
-    disabled: true
+    client-secret: ${KAKAO_CLIENT_SECRET}
+    redirect-url: ${KAKAO_CALLBACK_URL}

@@ -1,5 +1,7 @@
 package com.github.kmu_wink.seoul_in_culture;
 
+import java.util.TimeZone;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -8,6 +10,7 @@ public class SeoulInCultureApplication {
 
     public static void main(String[] args) {
 
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"));
         SpringApplication.run(SeoulInCultureApplication.class, args);
     }
 }
