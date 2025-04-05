@@ -8,6 +8,7 @@ import com.github.kmu_wink.seoul_in_culture.common.auth.JwtUtil;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.LoginRequest;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.LoginResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.MyInfoResponse;
+import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.internal.KakaoUser;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.schema.RefreshToken;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.exception.AuthenticationFailException;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.exception.InvalidRefreshTokenException;
@@ -31,14 +32,14 @@ public class AuthService {
 
     public LoginResponse login(LoginRequest dto) {
 
-        long kakaoUserInfo = kakaoApi.getKakaoInfo(dto.token()).orElseThrow(AuthenticationFailException::new);
+        KakaoUser kakaoUser = kakaoApi.getKakaoUser(dto.token()).orElseThrow(AuthenticationFailException::new);
 
         User user = userRepository.save(
-            userRepository.findByKakao(kakaoUserInfo).orElseGet(() ->
+            userRepository.findByKakao(kakaoUser.id()).orElseGet(() ->
                 User.builder()
-                    .kakao(kakaoUserInfo)
+                    .kakao(kakaoUser.id())
                     .nickname(generateRandomNickname())
-                    .email("")
+                    .email(kakaoUser.email())
                     .experience(0)
                     .meetingOpen(true)
                     .build()));
