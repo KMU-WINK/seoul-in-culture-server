@@ -16,4 +16,6 @@ public interface MeetingParticipantRepository extends MongoRepository<MeetingPar
 	List<MeetingParticipant> findAllByMeeting(Meeting meeting);
 
 	boolean existsByMeetingAndUser(Meeting meeting, User user);
+
+	void deleteByMeetingAndUser(Meeting meeting, User user);
 }
