@@ -15,4 +15,6 @@ public interface ChatMessageRepository extends MongoRepository<ChatMessage, Stri
 	List<ChatMessage> findAllByMeeting(Meeting meeting);
 
 	Optional<ChatMessage> findLastByMeeting(Meeting meeting);
+
+	void deleteAllByMeeting(Meeting meeting);
 }
