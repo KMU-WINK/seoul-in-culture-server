@@ -1,11 +1,10 @@
 package com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.schema;
 
-import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import com.github.kmu_wink.seoul_in_culture.common.database.mongo.BaseSchema;
-import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$participant.schema.MeetingParticipant;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.schema.Meeting;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 
@@ -29,5 +28,5 @@ public class ChatMessage extends BaseSchema {
 	String content;
 
 	@DBRef
-	List<MeetingParticipant> read;
+	Set<User> read;
 }

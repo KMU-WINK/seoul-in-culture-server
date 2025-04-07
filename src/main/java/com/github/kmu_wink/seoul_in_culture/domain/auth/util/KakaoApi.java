@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import com.github.kmu_wink.seoul_in_culture.common.property.KakaoProperty;
+import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.internal.KakaoUser;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.exception.KakaoAccessTokenException;
 
 import kong.unirest.core.ContentType;
@@ -19,7 +20,8 @@ public class KakaoApi {
 
 	private final KakaoProperty kakaoProperty;
 
-	public Optional<Long> getKakaoInfo(String token) {
+	public Optional<KakaoUser> getKakaoUser(String token) {
+
 		Optional<String> accessToken;
 
 		try (UnirestInstance instance = Unirest.spawnInstance()) {
@@ -43,13 +45,17 @@ public class KakaoApi {
 
 		try (UnirestInstance instance = Unirest.spawnInstance()) {
 
+			JSONObject response = instance.get("https://kapi.kakao.com/v2/user/me")
+				.header("Authorization", "Bearer " + accessToken.get())
+				.asJson()
+				.getBody()
+				.getObject();
+
 			return Optional.of(
-				instance.get("https://kapi.kakao.com/v2/user/me")
-					.header("Authorization", "Bearer " + accessToken)
-					.asJson()
-					.getBody()
-					.getObject()
-					.getLong("id"));
+				KakaoUser.builder()
+					.id(response.getLong("id"))
+					.email(response.getJSONObject("kakao_account").getString("email"))
+					.build());
 		}
 	}
 }

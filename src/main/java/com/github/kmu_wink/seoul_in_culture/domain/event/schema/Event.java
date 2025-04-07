@@ -1,6 +1,6 @@
 package com.github.kmu_wink.seoul_in_culture.domain.event.schema;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import com.github.kmu_wink.seoul_in_culture.common.database.mongo.BaseSchema;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
@@ -21,8 +21,8 @@ public class Event extends BaseSchema {
     String image;
     String title;
 
-    LocalDateTime startDate;
-    LocalDateTime endDate;
+    LocalDate startDate;
+    LocalDate endDate;
 
     String host;
     User.District district;
