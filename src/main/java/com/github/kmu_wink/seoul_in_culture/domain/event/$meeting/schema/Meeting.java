@@ -39,8 +39,5 @@ public class Meeting extends BaseSchema {
 	@Nullable
 	User.Gender gender;
 
-	@DBRef
-	User leader;
-
 	boolean end;
 }
