@@ -2,16 +2,11 @@ package com.github.kmu_wink.seoul_in_culture.domain.user.service;
 
 import static com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserExceptions.*;
 
-import java.util.List;
-
 import org.springframework.stereotype.Service;
 
 import com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.repository.BookmarkRepository;
-import com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.schema.Bookmark;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.repository.MeetingReviewRepository;
-import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.schema.MeetingReview;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.repository.MeetingRepository;
-import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.schema.Meeting;
 import com.github.kmu_wink.seoul_in_culture.domain.user.dto.request.UserEditRequest;
 import com.github.kmu_wink.seoul_in_culture.domain.user.dto.response.GetMyInfoResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.user.dto.response.GetOtherInfoResponse;
@@ -33,19 +28,12 @@ public class UserService {
 
     public GetMyInfoResponse getMyInfo(User user) {
 
-        List<Bookmark> bookmark = bookmarkRepository.findTop2ByUserOrderByCreatedAtDesc(user);
-
-        int joinedMeeting = meetingRepository.countByParticipantsContainingAndHostIsFalse(user);
-        int hostedMeeting = meetingRepository.countByParticipantsContainingAndHostIsTrue(user);
-
-        List<MeetingReview> review = meetingReviewRepository.findTop2ByTarget(user);
-
         return GetMyInfoResponse.builder()
             .user(user)
-            .bookmark(bookmark)
-            .joinedMeeting(joinedMeeting)
-            .hostedMeeting(hostedMeeting)
-            .review(review)
+            .bookmark(bookmarkRepository.findTop2ByUserOrderByCreatedAtDesc(user))
+            .joinedMeeting(meetingRepository.countByParticipantsContainingAndHostIsFalse(user))
+            .hostedMeeting(meetingRepository.countByParticipantsContainingAndHostIsTrue(user))
+            .review(meetingReviewRepository.findTop2ByTarget(user))
             .build();
     }
 
@@ -53,19 +41,12 @@ public class UserService {
 
         User user = userRepository.findById(userId).orElseThrow(() -> UserException.of(USER_NOT_FOUND));
 
-        int bookmark = bookmarkRepository.countByUser(user);
-
-        int joinedMeeting = meetingRepository.countByParticipantsContainingAndHostIsFalse(user);
-        List<Meeting> hostedMeeting = meetingRepository.findAllByParticipantsContainingAndHostIsTrue(user);
-
-        List<MeetingReview> review = meetingReviewRepository.findTop2ByTarget(user);
-
         return GetOtherInfoResponse.builder()
             .user(user)
-            .bookmark(bookmark)
-            .joinedMeeting(joinedMeeting)
-            .hostedMeeting(hostedMeeting)
-            .review(review)
+            .bookmark(bookmarkRepository.countByUser(user))
+            .joinedMeeting(meetingRepository.countByParticipantsContainingAndHostIsFalse(user))
+            .hostedMeeting(meetingRepository.findAllByParticipantsContainingAndHostIsTrue(user))
+            .review(meetingReviewRepository.findTop2ByTarget(user))
             .build();
     }
 

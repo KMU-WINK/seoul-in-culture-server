@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -59,33 +58,27 @@ public class ChatMessageService {
 	public ChatInfoResponse getChatInfo(User user, String meetingId) {
 
 		Meeting meeting = meetingRepository.findById(meetingId)
+			.filter(x -> x.getParticipants().contains(user))
 			.orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
-		Set<User> participants = meeting.getParticipants();
-		if (!participants.contains(user)) throw MeetingException.of(NOT_PARTICIPATED_MEETING);
-
-		List<ChatMessage> messages = chatMessageRepository.findAllByMeeting(meeting);
-
 		return ChatInfoResponse.builder()
-			.participants(participants)
-			.messages(messages)
+			.participants(meeting.getParticipants())
+			.messages(chatMessageRepository.findAllByMeeting(meeting))
 			.build();
 	}
 
 	public SendChatResponse sendChat(User user, String meetingId, @Valid SendChatRequest dto) {
 
 		Meeting meeting = meetingRepository.findById(meetingId)
+			.filter(x -> x.getParticipants().contains(user))
 			.orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
-
-		Set<User> participants = meeting.getParticipants();
-		if (!participants.contains(user)) throw MeetingException.of(NOT_PARTICIPATED_MEETING);
 
 		ChatMessage chatMessage = chatMessageRepository.save(
 			ChatMessage.builder()
 				.meeting(meeting)
 				.user(user)
 				.content(dto.content())
-				.unread(participants)
+				.unread(meeting.getParticipants())
 				.build()
 		);
 
@@ -111,14 +104,11 @@ public class ChatMessageService {
 	public void readAllChat(User user, String meetingId) {
 
 		Meeting meeting = meetingRepository.findById(meetingId)
+			.filter(x -> x.getParticipants().contains(user))
 			.orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
-		if (!meeting.getParticipants().contains(user)) throw MeetingException.of(NOT_PARTICIPATED_MEETING);
-
 		chatMessageRepository.findAllByMeeting(meeting).forEach(chatMessage -> {
-
 			chatMessage.getUnread().remove(user);
-
 			chatMessageRepository.save(chatMessage);
 		});
 	}
@@ -126,9 +116,8 @@ public class ChatMessageService {
 	public void readChat(User user, String chattingId) {
 
 		ChatMessage chatMessage = chatMessageRepository.findById(chattingId)
+			.filter(x -> x.getMeeting().getParticipants().contains(user))
 			.orElseThrow(() -> ChatMessageException.of(MESSAGE_NOT_FOUND));
-
-		if (!chatMessage.getMeeting().getParticipants().contains(user)) throw MeetingException.of(NOT_PARTICIPATED_MEETING);
 
 		chatMessage.getUnread().remove(user);
 
@@ -138,11 +127,15 @@ public class ChatMessageService {
 	public SseEmitter openSseTunnel(User user, String meetingId) {
 
 		Meeting meeting = meetingRepository.findById(meetingId)
+			.filter(x -> x.getParticipants().contains(user))
 			.orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
-		if (!meeting.getParticipants().contains(user)) throw MeetingException.of(NOT_PARTICIPATED_MEETING);
-
 		SseEmitter emitter = new SseEmitter(DEFAULT_SSE_TIMEOUT);
+
+		emitter.onCompletion(() -> emitters.getOrDefault(meeting, Collections.emptyList()).remove(emitter));
+		emitter.onTimeout(() -> emitters.getOrDefault(meeting, Collections.emptyList()).remove(emitter));
+
+		emitters.computeIfAbsent(meeting, x -> new CopyOnWriteArrayList<>()).add(emitter);
 
 		try {
 			emitter.send(
@@ -154,11 +147,6 @@ public class ChatMessageService {
 		} catch (IOException e) {
 			emitters.getOrDefault(meeting, Collections.emptyList()).remove(emitter);
 		}
-
-		emitter.onCompletion(() -> emitters.getOrDefault(meeting, Collections.emptyList()).remove(emitter));
-		emitter.onTimeout(() -> emitters.getOrDefault(meeting, Collections.emptyList()).remove(emitter));
-
-		emitters.computeIfAbsent(meeting, x -> new CopyOnWriteArrayList<>()).add(emitter);
 
 		return emitter;
 	}
