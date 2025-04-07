@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 public enum MeetingExceptions {
 
 	MEETING_NOT_FOUND("모임을 찾을 수 없습니다."),
-	NOT_PARTICIPATED_MEETING("참가중인 모임이 아닙니다."),
 	;
 
 	private final String message;
