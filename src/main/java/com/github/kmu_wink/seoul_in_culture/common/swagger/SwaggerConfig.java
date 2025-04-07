@@ -1,10 +1,11 @@
-package com.github.kmu_wink.seoul_in_culture.common.config;
+package com.github.kmu_wink.seoul_in_culture.common.swagger;
 
-import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.OpenAPI;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
 
 @Configuration
 public class SwaggerConfig {
@@ -13,10 +14,12 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI openAPI() {
+
         Info info = new Info()
-                .title("여기차대")
-                .version("v0.0.1")
+                .title("Seoul IN Culture")
+                .version("v1.0.0")
                 .description("2025 서울 열린데이터광장 공모전");
+
         return new OpenAPI()
                 .components(new Components())
                 .info(info);

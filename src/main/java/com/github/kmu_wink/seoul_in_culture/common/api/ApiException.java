@@ -1,13 +1,9 @@
 package com.github.kmu_wink.seoul_in_culture.common.api;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+public abstract class ApiException extends RuntimeException {
 
-@Getter
-@RequiredArgsConstructor
-public class ApiException extends RuntimeException{
+    protected ApiException(String message) {
 
-    private final HttpStatus status;
-    private final String message;
+        super(message);
+    }
 }

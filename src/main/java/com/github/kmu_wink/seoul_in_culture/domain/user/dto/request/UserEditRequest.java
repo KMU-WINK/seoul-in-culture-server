@@ -1,24 +1,22 @@
-package com.github.kmu_wink.seoul_in_culture.domain.user.dto;
+package com.github.kmu_wink.seoul_in_culture.domain.user.dto.request;
 
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
-import io.swagger.v3.oas.annotations.media.Schema;
+
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record UserEditRequest(
+
         @Nullable
-        @Schema(description = "프로필 이미지")
         String avatar,
 
         @NotBlank
-        @Schema(description = "닉네임")
         String nickname,
 
         @NotNull
-        @Schema(description = "지역구")
         User.District district,
 
-        @Schema(description = "참여 중인 모임 공개 여부")
         boolean meetingOpen
-) {}
+) {
+}

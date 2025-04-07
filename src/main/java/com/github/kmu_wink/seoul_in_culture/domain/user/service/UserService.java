@@ -1,95 +1,85 @@
 package com.github.kmu_wink.seoul_in_culture.domain.user.service;
 
-import com.github.kmu_wink.seoul_in_culture.common.auth.AuthGuard;
-import com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.repository.BookmarkRepository;
-import com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.schema.Bookmark;
-import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$participant.repository.MeetingParticipantRepository;
-import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$participant.schema.MeetingParticipant;
-import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.repository.MeetingReviewRepository;
-import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.schema.MeetingReview;
-import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.schema.Meeting;
-import com.github.kmu_wink.seoul_in_culture.domain.user.dto.*;
-import com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserNotFoundException;
-import com.github.kmu_wink.seoul_in_culture.domain.user.repository.UserRepository;
-import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import static com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserExceptions.*;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
+import com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.repository.BookmarkRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.schema.Bookmark;
+import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.repository.MeetingReviewRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.schema.MeetingReview;
+import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.repository.MeetingRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.schema.Meeting;
+import com.github.kmu_wink.seoul_in_culture.domain.user.dto.request.UserEditRequest;
+import com.github.kmu_wink.seoul_in_culture.domain.user.dto.response.GetMyInfoResponse;
+import com.github.kmu_wink.seoul_in_culture.domain.user.dto.response.GetOtherInfoResponse;
+import com.github.kmu_wink.seoul_in_culture.domain.user.dto.response.UpdateMyInfoResponse;
+import com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserException;
+import com.github.kmu_wink.seoul_in_culture.domain.user.repository.UserRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
+
+import lombok.RequiredArgsConstructor;
+
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
-    private final MeetingReviewRepository meetingReviewRepository;
+    private final MeetingRepository meetingRepository;
     private final BookmarkRepository bookmarkRepository;
-    private final MeetingParticipantRepository meetingParticipantRepository;
+    private final MeetingReviewRepository meetingReviewRepository;
 
-    @AuthGuard
-    public UserEditResponse editUser(User user, UserEditRequest request) {
-        user.setAvatar(request.avatar());
-        user.setNickname(request.nickname());
-        user.setDistrict(request.district());
-        user.setMeetingOpen(request.meetingOpen());
+    public GetMyInfoResponse getMyInfo(User user) {
 
-        User editedUser = userRepository.save(user);
+        List<Bookmark> bookmark = bookmarkRepository.findTop2ByUserOrderByCreatedAtDesc(user);
 
-        return UserEditResponse.builder()
-                .user(editedUser)
-                .build();
+        int joinedMeeting = meetingRepository.countByParticipantsContainingAndHostIsFalse(user);
+        int hostedMeeting = meetingRepository.countByParticipantsContainingAndHostIsTrue(user);
+
+        List<MeetingReview> review = meetingReviewRepository.findTop2ByTarget(user);
+
+        return GetMyInfoResponse.builder()
+            .user(user)
+            .bookmark(bookmark)
+            .joinedMeeting(joinedMeeting)
+            .hostedMeeting(hostedMeeting)
+            .review(review)
+            .build();
     }
 
-    @AuthGuard
-    public MyDetailResponse getMyDetail(User user) {
+    public GetOtherInfoResponse getOtherInfo(String userId) {
 
-        List<Bookmark> bookmarks = bookmarkRepository.findTop2ByUserOrderByCreatedAtDesc(user);
+        User user = userRepository.findById(userId).orElseThrow(() -> UserException.of(USER_NOT_FOUND));
 
-        int joinedMeetings = meetingParticipantRepository.countByUserAndHostFalse(user);
-        int hostedMeetings = meetingParticipantRepository.countByUserAndHostTrue(user);
+        int bookmark = bookmarkRepository.countByUser(user);
 
+        int joinedMeeting = meetingRepository.countByParticipantsContainingAndHostIsFalse(user);
+        List<Meeting> hostedMeeting = meetingRepository.findAllByParticipantsContainingAndHostIsTrue(user);
 
-        List<MeetingReview> meetingReviews = meetingParticipantRepository.findAllByUser(user)
-                .stream()
-                .flatMap(p -> meetingReviewRepository.findAllByTarget(p).stream())
-                .limit(2)
-                .toList();
+        List<MeetingReview> review = meetingReviewRepository.findTop2ByTarget(user);
 
-        return MyDetailResponse.builder()
-                .user(user)
-                .bookmark(bookmarks)
-                .joinedMeeting(joinedMeetings)
-                .hostedMeeting(hostedMeetings)
-                .review(meetingReviews)
-                .build();
+        return GetOtherInfoResponse.builder()
+            .user(user)
+            .bookmark(bookmark)
+            .joinedMeeting(joinedMeeting)
+            .hostedMeeting(hostedMeeting)
+            .review(review)
+            .build();
     }
 
-    public OtherDetailResponse getOtherDetail(String userId) {
-        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+    public UpdateMyInfoResponse updateMyInfo(User user, UserEditRequest dto) {
 
-        int bookmarkCount = bookmarkRepository.countByUser(user);
-        int joinedMeetings = meetingParticipantRepository.countByUserAndHostFalse(user);
+        user.setAvatar(dto.avatar());
+        user.setNickname(dto.nickname());
+        user.setDistrict(dto.district());
+        user.setMeetingOpen(dto.meetingOpen());
 
-        List<MeetingReview> meetingReviews = meetingParticipantRepository.findAllByUser(user)
-                .stream()
-                .flatMap(p -> meetingReviewRepository.findAllByTarget(p).stream())
-                .limit(2)
-                .toList();
+        user = userRepository.save(user);
 
-        List<Meeting> hostedParticipants = meetingParticipantRepository.findAllByUserAndHostTrue(user)
-                .stream()
-                .map(MeetingParticipant::getMeeting)
-                .toList();
-
-
-        return OtherDetailResponse.builder()
-                .user(user)
-                .bookmark(bookmarkCount)
-                .joinedMeeting(joinedMeetings)
-                .review(meetingReviews)
-                .hostedMeeting(hostedParticipants)
-                .build();
+        return UpdateMyInfoResponse.builder()
+            .user(user)
+            .build();
     }
 }

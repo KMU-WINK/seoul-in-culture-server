@@ -1,6 +1,7 @@
 package com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.schema;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
@@ -9,14 +10,14 @@ import com.github.kmu_wink.seoul_in_culture.domain.event.schema.Event;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 
 import jakarta.annotation.Nullable;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 @Data
-@SuperBuilder
-@NoArgsConstructor
+@Builder
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class Meeting extends BaseSchema {
 
@@ -38,6 +39,12 @@ public class Meeting extends BaseSchema {
 
 	@Nullable
 	User.Gender gender;
+
+	@DBRef
+	User host;
+
+	@DBRef
+	Set<User> participants;
 
 	boolean end;
 }

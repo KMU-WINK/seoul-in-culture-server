@@ -1,6 +1,5 @@
-package com.github.kmu_wink.seoul_in_culture.common.config;
+package com.github.kmu_wink.seoul_in_culture.common.security.authentication;
 
-import com.github.kmu_wink.seoul_in_culture.common.auth.UserAuthentication;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;

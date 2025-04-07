@@ -6,7 +6,8 @@ import org.springframework.stereotype.Component;
 
 import com.github.kmu_wink.seoul_in_culture.common.property.KakaoProperty;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.internal.KakaoUser;
-import com.github.kmu_wink.seoul_in_culture.domain.auth.exception.KakaoAccessTokenException;
+import com.github.kmu_wink.seoul_in_culture.domain.auth.exception.AuthException;
+import com.github.kmu_wink.seoul_in_culture.domain.auth.exception.AuthExceptions;
 
 import kong.unirest.core.ContentType;
 import kong.unirest.core.Unirest;
@@ -36,7 +37,7 @@ public class KakaoApi {
 				.getBody()
 				.getObject();
 
-			if (response.has("error_code")) throw new KakaoAccessTokenException(response.getString("error_code"));
+			if (response.has("error_code")) throw AuthException.of(AuthExceptions.INVALID_KAKAO_TOKEN);
 
 			accessToken = Optional.ofNullable(response.getString("access_token"));
 		}

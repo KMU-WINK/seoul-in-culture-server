@@ -1,21 +1,23 @@
 package com.github.kmu_wink.seoul_in_culture.domain.auth.service;
 
+import static com.github.kmu_wink.seoul_in_culture.domain.auth.exception.AuthExceptions.*;
+
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.github.kmu_wink.seoul_in_culture.common.auth.JwtUtil;
-import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.LoginRequest;
-import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.LoginResponse;
-import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.MyInfoResponse;
+import com.github.kmu_wink.seoul_in_culture.common.security.jwt.JwtUtil;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.internal.KakaoUser;
-import com.github.kmu_wink.seoul_in_culture.domain.auth.schema.RefreshToken;
-import com.github.kmu_wink.seoul_in_culture.domain.auth.exception.AuthenticationFailException;
-import com.github.kmu_wink.seoul_in_culture.domain.auth.exception.InvalidRefreshTokenException;
+import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.request.LoginRequest;
+import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.response.GetMyTokenInfoResponse;
+import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.response.LoginResponse;
+import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.response.RefreshTokenResponse;
+import com.github.kmu_wink.seoul_in_culture.domain.auth.exception.AuthException;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.repository.RefreshTokenRedisRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.auth.schema.RefreshToken;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.util.KakaoApi;
-import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 import com.github.kmu_wink.seoul_in_culture.domain.user.repository.UserRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +34,8 @@ public class AuthService {
 
     public LoginResponse login(LoginRequest dto) {
 
-        KakaoUser kakaoUser = kakaoApi.getKakaoUser(dto.token()).orElseThrow(AuthenticationFailException::new);
+        KakaoUser kakaoUser = kakaoApi.getKakaoUser(dto.token())
+            .orElseThrow(() -> AuthException.of(INVALID_KAKAO_TOKEN));
 
         User user = userRepository.save(
             userRepository.findByKakao(kakaoUser.id()).orElseGet(() ->
@@ -53,25 +56,27 @@ public class AuthService {
             .build();
     }
 
-    public LoginResponse refreshToken(@Valid LoginRequest request) {
+    public RefreshTokenResponse refreshToken(@Valid LoginRequest request) {
 
-        RefreshToken token = refreshTokenRedisRepository.findByToken(request.token()).orElseThrow(InvalidRefreshTokenException::new);
+        RefreshToken token = refreshTokenRedisRepository.findByToken(request.token())
+            .orElseThrow(() -> AuthException.of(INVALID_REFRESH_TOKEN));
+
         refreshTokenRedisRepository.delete(token);
 
-        User user = userRepository.findById(token.userId()).orElseThrow(AuthenticationFailException::new);
+        User user = userRepository.findById(token.userId()).orElseThrow(() -> AuthException.of(FAIL_AUTHENTICATION));
 
         String accessToken = jwtUtil.generateAccessToken(user);
         String refreshToken = jwtUtil.generateRefreshToken(user);
 
-        return LoginResponse.builder()
+        return RefreshTokenResponse.builder()
             .accessToken(accessToken)
             .refreshToken(refreshToken)
             .build();
     }
 
-    public MyInfoResponse myInfo(User user) {
+    public GetMyTokenInfoResponse getMyTokenInfo(User user) {
 
-        return MyInfoResponse.builder()
+        return GetMyTokenInfoResponse.builder()
             .user(user)
             .build();
     }

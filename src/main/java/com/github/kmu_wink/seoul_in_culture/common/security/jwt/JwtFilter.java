@@ -1,26 +1,29 @@
-package com.github.kmu_wink.seoul_in_culture.common.filter;
+package com.github.kmu_wink.seoul_in_culture.common.security.jwt;
+
+import static com.github.kmu_wink.seoul_in_culture.domain.auth.exception.AuthExceptions.*;
+
+import java.io.IOException;
+import java.util.stream.Stream;
+
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kmu_wink.seoul_in_culture.common.api.ApiException;
 import com.github.kmu_wink.seoul_in_culture.common.api.ApiResponse;
-import com.github.kmu_wink.seoul_in_culture.common.auth.JwtUtil;
-import com.github.kmu_wink.seoul_in_culture.common.auth.UserAuthentication;
-import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
+import com.github.kmu_wink.seoul_in_culture.common.security.authentication.UserAuthentication;
+import com.github.kmu_wink.seoul_in_culture.domain.auth.exception.AuthException;
 import com.github.kmu_wink.seoul_in_culture.domain.user.repository.UserRepository;
-import com.github.kmu_wink.seoul_in_culture.domain.auth.exception.AccessTokenExpiredException;
+import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
+
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-import com.github.kmu_wink.seoul_in_culture.domain.auth.exception.AuthenticationFailException;
-import java.io.IOException;
-import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
@@ -42,14 +45,14 @@ public class JwtFilter extends OncePerRequestFilter {
             if (accessToken != null && jwtUtil.validateToken(accessToken)) {
 
                 String id = jwtUtil.extractToken(accessToken);
-                User user = repository.findById(id).orElseThrow(AuthenticationFailException::new);
+                User user = repository.findById(id).orElseThrow(() -> AuthException.of(FAIL_AUTHENTICATION));
 
                 UserAuthentication authentication = new UserAuthentication(user);
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (TokenExpiredException e) {
-            handleException(response, new AccessTokenExpiredException());
+            handleException(response, AuthException.of(EXPIRED_ACCESS_TOKEN));
             return;
         } catch (ApiException e) {
             handleException(response, e);

@@ -1,4 +1,4 @@
-package com.github.kmu_wink.seoul_in_culture.common.auth;
+package com.github.kmu_wink.seoul_in_culture.common.security.jwt;
 
 import java.time.Instant;
 import java.util.Objects;
