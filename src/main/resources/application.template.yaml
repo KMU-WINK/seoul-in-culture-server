@@ -3,9 +3,6 @@ spring:
     import:
       - classpath:/application.common.yaml
   data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
     mongodb:
       host: ${MONGO_HOST}
       port: ${MONGO_PORT}
@@ -14,8 +11,7 @@ spring:
 app:
   jwt:
     key: ${JWT_KEY}
-    access-token-expiration-hours: 1
-    refresh-token-expiration-hours: 720
+    expiration-hours: 720
   kakao:
     client-id: ${KAKAO_CLIENT_ID}
     client-secret: ${KAKAO_CLIENT_SECRET}

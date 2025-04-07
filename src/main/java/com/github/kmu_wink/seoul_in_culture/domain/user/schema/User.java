@@ -1,7 +1,7 @@
 package com.github.kmu_wink.seoul_in_culture.domain.user.schema;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.github.kmu_wink.seoul_in_culture.common.database.mongo.BaseSchema;
+import com.github.kmu_wink.seoul_in_culture.common.mongo.BaseSchema;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -11,15 +11,11 @@ import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.internal.KakaoUser;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.request.LoginRequest;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.response.GetMyTokenInfoResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.response.LoginResponse;
-import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.response.RefreshTokenResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.exception.AuthException;
-import com.github.kmu_wink.seoul_in_culture.domain.auth.repository.RefreshTokenRedisRepository;
-import com.github.kmu_wink.seoul_in_culture.domain.auth.schema.RefreshToken;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.util.KakaoApi;
 import com.github.kmu_wink.seoul_in_culture.domain.user.repository.UserRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -27,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final RefreshTokenRedisRepository refreshTokenRedisRepository;
 
     private final KakaoApi kakaoApi;
     private final JwtUtil jwtUtil;
@@ -47,30 +42,8 @@ public class AuthService {
                     .meetingOpen(true)
                     .build()));
 
-        String accessToken = jwtUtil.generateAccessToken(user);
-        String refreshToken = jwtUtil.generateRefreshToken(user);
-
         return LoginResponse.builder()
-            .accessToken(accessToken)
-            .refreshToken(refreshToken)
-            .build();
-    }
-
-    public RefreshTokenResponse refreshToken(@Valid LoginRequest request) {
-
-        RefreshToken token = refreshTokenRedisRepository.findByToken(request.token())
-            .orElseThrow(() -> AuthException.of(INVALID_REFRESH_TOKEN));
-
-        refreshTokenRedisRepository.delete(token);
-
-        User user = userRepository.findById(token.userId()).orElseThrow(() -> AuthException.of(FAIL_AUTHENTICATION));
-
-        String accessToken = jwtUtil.generateAccessToken(user);
-        String refreshToken = jwtUtil.generateRefreshToken(user);
-
-        return RefreshTokenResponse.builder()
-            .accessToken(accessToken)
-            .refreshToken(refreshToken)
+            .token(jwtUtil.generateToken(user))
             .build();
     }
 

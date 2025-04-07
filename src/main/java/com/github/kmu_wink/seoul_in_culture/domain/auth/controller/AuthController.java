@@ -10,9 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.github.kmu_wink.seoul_in_culture.common.api.ApiResponse;
 import com.github.kmu_wink.seoul_in_culture.common.security.authentication.AuthGuard;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.request.LoginRequest;
-import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.response.LoginResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.response.GetMyTokenInfoResponse;
-import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.response.RefreshTokenResponse;
+import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.response.LoginResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.auth.service.AuthService;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 
@@ -34,14 +33,6 @@ public class AuthController {
     ) {
 
         return ApiResponse.ok(authService.login(request));
-    }
-
-    @PostMapping("/refresh-token")
-    public ApiResponse<RefreshTokenResponse> refreshToken(
-        @RequestBody @Valid LoginRequest request
-    ) {
-
-        return ApiResponse.ok(authService.refreshToken(request));
     }
 
     @AuthGuard
