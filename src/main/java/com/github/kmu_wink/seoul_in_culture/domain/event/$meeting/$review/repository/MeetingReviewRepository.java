@@ -1,10 +1,13 @@
 package com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.repository;
 
+import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$participant.schema.MeetingParticipant;
+import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.schema.MeetingReview;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingReview;
+import java.util.List;
 
 @Repository
 public interface MeetingReviewRepository extends MongoRepository<MeetingReview, String> {
+    List<MeetingReview> findAllByTarget(MeetingParticipant p);
 }
