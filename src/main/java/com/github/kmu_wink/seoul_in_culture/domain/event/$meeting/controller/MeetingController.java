@@ -41,5 +41,11 @@ public class MeetingController {
         return ApiResponse.ok();
     }
 
+    @PostMapping("/{meetingId}/manage/delegate/{userId}")
+    public ApiResponse<Void> delegateHost(@AuthenticationPrincipal User currentHost, @PathVariable String meetingId, @PathVariable String userId) {
+        meetingService.delegateHost(currentHost, userId, meetingId);
+        return ApiResponse.ok();
+    }
+
 
 }

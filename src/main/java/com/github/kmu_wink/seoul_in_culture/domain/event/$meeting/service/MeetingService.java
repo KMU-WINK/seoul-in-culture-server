@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 public class MeetingService {
     private final MeetingParticipantRepository meetingParticipantRepository;
     private final MeetingRepository meetingRepository;
+    private final UserRepository userRepository;
 
     public void leaveMeeting(User user,String meeting_id) {
         Meeting meeting = meetingRepository.findById(meeting_id)
@@ -59,6 +60,29 @@ public class MeetingService {
         meeting.setEnd(true);
         meetingRepository.save(meeting);
 
+    }
+
+    public void delegateHost(User fromUser, String toUser_id, String meeting_id) {
+        Meeting meeting = meetingRepository.findById(meeting_id)
+                .orElseThrow(MeetingNotFoundException::new);
+
+        MeetingParticipant currentHost = meetingParticipantRepository.findByMeetingAndUser(meeting, fromUser)
+                .orElseThrow(() -> new RuntimeException("모임 참여자가 아닙니다"));
+        if(!currentHost.isHost()) {
+            throw new IllegalStateException("권한 없음: 리더만 위임 가능");
+        }
+
+        //위임 대상자가 모임 참여자인지 확인
+        User toUser = userRepository.findById(toUser_id)
+                .orElseThrow(() -> new RuntimeException("대상자를 찾을 수 없습니다"));
+        MeetingParticipant targetHost = meetingParticipantRepository.findByMeetingAndUser(meeting, toUser)
+                .orElseThrow(() -> new RuntimeException("위임 대상자가 모임에 참여하지 않았습니다"));
+
+        //호스트 교체
+        currentHost.setHost(false);
+        targetHost.setHost(true);
+        meetingParticipantRepository.save(currentHost);
+        meetingParticipantRepository.save(targetHost);
     }
 
 
