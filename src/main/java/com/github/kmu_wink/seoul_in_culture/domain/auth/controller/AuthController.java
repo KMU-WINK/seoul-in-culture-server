@@ -15,6 +15,7 @@ import com.github.kmu_wink.seoul_in_culture.domain.auth.dto.response.LoginRespon
 import com.github.kmu_wink.seoul_in_culture.domain.auth.service.AuthService;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
+    @Operation(summary = "로그인")
     public ApiResponse<LoginResponse> login(
         @RequestBody @Valid LoginRequest request
     ) {
@@ -37,6 +39,7 @@ public class AuthController {
 
     @AuthGuard
     @GetMapping("/me")
+    @Operation(summary = "토큰으로 정보 조회")
     public ApiResponse<GetMyTokenInfoResponse> getMyTokenInfo(
         @AuthenticationPrincipal User user
     ) {
