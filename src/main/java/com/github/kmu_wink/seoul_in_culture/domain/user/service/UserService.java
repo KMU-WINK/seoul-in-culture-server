@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -43,45 +42,23 @@ public class UserService {
 
     public MyDetailResponse getMyDetail(User user) {
         UserDto userDto = UserDto.builder()
-                .id(user.getId())
-                .nickname(user.getNickname())
-                .createdAt(user.getCreatedAt())
-                .email(user.getEmail())
-                .district(user.getDistrict().toString())
-                .score(getScore(user))
-                .experience(user.getExperience())
-                .gender(user.getGender().toString())
-                .age(calculateAge(user.getBirthYear()))
+                .user(user)
                 .build();
 
-        List<Bookmark> bookmarks = bookmarkRepository.findTop2ByUserIdOrderByCreatedAtDesc(user.getId());
+        List<Bookmark> bookmarks = bookmarkRepository.findTop2ByUserOrderByCreatedAtDesc(user);
         List<BookmarkDto> bookmarkDtos = bookmarks.stream()
                 .map(b -> BookmarkDto.builder()
-                        .id(b.getId())
-                        .category(b.getEvent().getCategory())
-                        .image(b.getEvent().getImage())
-                        .title(b.getEvent().getTitle())
-                        .startDate(b.getEvent().getStartDate())
-                        .endDate(b.getEvent().getEndDate())
+                        .bookmark(b)
                         .build())
                 .toList();
 
-        int joinedMeetings = meetingParticipantRepository.countByUserIdAndHostFalse(user.getId());
-        int hostedMeetings = meetingParticipantRepository.countByUserIdAndHostTrue(user.getId());
+        int joinedMeetings = meetingParticipantRepository.countByUserAndHostFalse(user);
+        int hostedMeetings = meetingParticipantRepository.countByUserAndHostTrue(user);
 
-        List<MeetingReview> meetingReviews = meetingReviewRepository.findTop2ByTargetUserIdOrderByCreatedAtDesc(user.getId());
+        List<MeetingReview> meetingReviews = meetingReviewRepository.findTop2ByTargetUserOrderByCreatedAtDesc(user);
         List<ReviewDto> reviewDtos = meetingReviews.stream()
                 .map(r -> ReviewDto.builder()
-                        .id(r.getId())
-                        .author(
-                                AuthorDto.builder()
-                                        .createdAt(r.getAuthor().getCreatedAt())
-                                        .avatar(r.getAuthor().getUser().getAvatar())
-                                        .nickname(r.getAuthor().getUser().getNickname())
-                                        .build()
-                        )
-                        .score(r.getScore())
-                        .content(r.getContent())
+                        .review(r)
                         .build())
                 .toList();
 
@@ -98,41 +75,23 @@ public class UserService {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
         UserDto userDto = UserDto.builder()
-                .id(user.getId())
-                .nickname(user.getNickname())
-                .createdAt(user.getCreatedAt())
-                .district(user.getDistrict().toString())
-                .score(getScore(user))
-                .gender(user.getGender().toString())
-                .age(calculateAge(user.getBirthYear()))
+                .user(user)
                 .build();
 
-        int bookmarkCount = bookmarkRepository.countByUserId(userId);
-        int joinedMeetings = meetingParticipantRepository.countByUserIdAndHostFalse(userId);
+        int bookmarkCount = bookmarkRepository.countByUser(user);
+        int joinedMeetings = meetingParticipantRepository.countByUserAndHostFalse(user);
 
-        List<MeetingReview> recentReviews = meetingReviewRepository.findTop2ByTargetUserIdOrderByCreatedAtDesc(userId);
+        List<MeetingReview> recentReviews = meetingReviewRepository.findTop2ByTargetUserOrderByCreatedAtDesc(user);
         List<ReviewDto> reviewDtos = recentReviews.stream()
                 .map(r -> ReviewDto.builder()
-                        .id(r.getId())
-                        .author(AuthorDto.builder()
-                                .createdAt(r.getAuthor().getCreatedAt())
-                                .avatar(r.getAuthor().getUser().getAvatar())
-                                .nickname(r.getAuthor().getUser().getNickname())
-                                .build())
-                        .score(r.getScore())
-                        .content(r.getContent())
+                        .review(r)
                         .build())
                 .toList();
 
-        List<MeetingParticipant> hostedParticipants = meetingParticipantRepository.findAllByUserIdAndHostTrue(userId);
+        List<MeetingParticipant> hostedParticipants = meetingParticipantRepository.findAllByUserAndHostTrue(user);
         List<MeetingDto> hostedMeetingDtos = hostedParticipants.stream()
                 .map(mp -> MeetingDto.builder()
-                        .id(mp.getMeeting().getId())
-                        .event(EventDto.builder()
-                                .image(mp.getMeeting().getEvent().getImage())
-                                .build())
-                        .title(mp.getMeeting().getTitle())
-                        .createdAt(mp.getMeeting().getCreatedAt())
+                        .meetingParticipant(mp)
                         .build())
                 .toList();
 
@@ -143,17 +102,5 @@ public class UserService {
                 .review(reviewDtos)
                 .hostedMeeting(hostedMeetingDtos)
                 .build();
-    }
-
-    private double getScore(User user) {
-        List<MeetingReview> meetingReviews = meetingReviewRepository.findAllByTargetUserId(user.getId());
-        return meetingReviews.stream()
-                .mapToInt(MeetingReview::getScore)
-                .average()
-                .orElse(2.5);
-    }
-
-    private int calculateAge(int birthYear) {
-        return LocalDateTime.now().getYear() - birthYear;
     }
 }
