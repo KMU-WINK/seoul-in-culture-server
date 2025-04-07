@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.github.kmu_wink.seoul_in_culture.common.api.ApiResponse;
-import com.github.kmu_wink.seoul_in_culture.common.auth.AuthGuard;
+import com.github.kmu_wink.seoul_in_culture.common.security.authentication.AuthGuard;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.dto.request.SendChatRequest;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.dto.response.ChatInfoResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.dto.response.RoomListResponse;
@@ -26,36 +26,48 @@ import lombok.RequiredArgsConstructor;
 @AuthGuard
 @RestController
 @RequestMapping("/event/meeting/chat")
-@Tag(name = "[행사] [모임] [채팅]")
 @RequiredArgsConstructor
+@Tag(name = "[행사] [모임] [채팅]")
 public class ChatMessageController {
 
 	private final ChatMessageService chatMessageService;
 
 	@GetMapping
 	@Operation(summary = "채팅방 목록")
-	public ApiResponse<RoomListResponse> getRoomList(@AuthenticationPrincipal User user) {
+	public ApiResponse<RoomListResponse> getRoomList(
+		@AuthenticationPrincipal User user
+	) {
 
 		return ApiResponse.ok(chatMessageService.getRoomList(user));
 	}
 
 	@GetMapping("/{meetingId}")
 	@Operation(summary = "채팅방 정보 보기 (채팅 기록 및 참가자)")
-	public ApiResponse<ChatInfoResponse> getChatInfo(@AuthenticationPrincipal User user, @PathVariable String meetingId) {
+	public ApiResponse<ChatInfoResponse> getChatInfo(
+		@AuthenticationPrincipal User user,
+		@PathVariable String meetingId
+	) {
 
 		return ApiResponse.ok(chatMessageService.getChatInfo(user, meetingId));
 	}
 
 	@PostMapping("/{meetingId}")
 	@Operation(summary = "채팅 보내기")
-	public ApiResponse<SendChatResponse> sendChat(@AuthenticationPrincipal User user, @PathVariable String meetingId, @RequestBody @Valid SendChatRequest dto) {
+	public ApiResponse<SendChatResponse> sendChat(
+		@AuthenticationPrincipal User user,
+		@PathVariable String meetingId,
+		@RequestBody @Valid SendChatRequest dto
+	) {
 
 		return ApiResponse.ok(chatMessageService.sendChat(user, meetingId, dto));
 	}
 
 	@PostMapping("/read/all/{meetingId}")
 	@Operation(summary = "채팅 모두 읽음")
-	public ApiResponse<Void> readAllChat(@AuthenticationPrincipal User user, @PathVariable String meetingId) {
+	public ApiResponse<Void> readAllChat(
+		@AuthenticationPrincipal User user,
+		@PathVariable String meetingId
+	) {
 
 		chatMessageService.readAllChat(user, meetingId);
 
@@ -64,7 +76,10 @@ public class ChatMessageController {
 
 	@PostMapping("/read/{chattingId}")
 	@Operation(summary = "채팅 읽음")
-	public ApiResponse<Void> readChat(@AuthenticationPrincipal User user, @PathVariable String chattingId) {
+	public ApiResponse<Void> readChat(
+		@AuthenticationPrincipal User user,
+		@PathVariable String chattingId
+	) {
 
 		chatMessageService.readChat(user, chattingId);
 
@@ -73,7 +88,10 @@ public class ChatMessageController {
 
 	@GetMapping("/{meetingId}/sse")
 	@Operation(summary = "SSE 터널 열기")
-	public SseEmitter openSseTunnel(@AuthenticationPrincipal User user, @PathVariable String meetingId) {
+	public SseEmitter openSseTunnel(
+		@AuthenticationPrincipal User user,
+		@PathVariable String meetingId
+	) {
 
 		return chatMessageService.openSseTunnel(user, meetingId);
 	}

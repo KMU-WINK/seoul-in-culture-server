@@ -1,36 +1,26 @@
 package com.github.kmu_wink.seoul_in_culture.common.api;
 
-import lombok.Data;
-import org.springframework.http.HttpStatus;
-
 import java.util.Map;
 
-@Data
-public class ApiResponse<T> {
-
-    private final int statusCode;
-    private final String errorMessage;
-    private final T content;
-
-    private ApiResponse(int statusCode, String errorMessage, T content) {
-        this.statusCode = statusCode;
-        this.errorMessage = errorMessage;
-        this.content = content;
-    }
+public record ApiResponse<T>(boolean success, String errorMessage, T content) {
 
     public static <T> ApiResponse<T> ok() {
-        return new ApiResponse<>(200, null, null);
+
+        return ok(null);
     }
 
     public static <T> ApiResponse<T> ok(T content) {
-        return new ApiResponse<>(200, null, content);
-    }
 
-    public static ApiResponse<Map<String, String>> error(HttpStatus status, String message) {
-        return new ApiResponse<>(status.value(), message, null);
+        return new ApiResponse<>(true, null, content);
     }
 
     public static ApiResponse<Map<String, String>> error(ApiException exception) {
-        return error(exception.getStatus(), exception.getMessage());
+
+        return error(exception.getMessage());
+    }
+
+    public static ApiResponse<Map<String, String>> error(String message) {
+
+        return new ApiResponse<>(false, message, null);
     }
 }
