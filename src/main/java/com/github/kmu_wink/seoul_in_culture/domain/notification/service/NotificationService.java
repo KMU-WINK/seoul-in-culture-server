@@ -4,9 +4,12 @@ import static com.github.kmu_wink.seoul_in_culture.domain.notification.exception
 
 import org.springframework.stereotype.Service;
 
+import com.github.kmu_wink.seoul_in_culture.domain.notification.dto.request.SubscribeRequest;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.dto.response.GetNotificationsResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.exception.NotificationException;
+import com.github.kmu_wink.seoul_in_culture.domain.notification.repository.FcmTokenRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.repository.NotificationRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.FcmToken;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.Notification;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 
@@ -17,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class NotificationService {
 
 	private final NotificationRepository notificationRepository;
+	private final FcmTokenRepository fcmTokenRepository;
 
 	public GetNotificationsResponse getNotifications(User user) {
 
@@ -43,5 +47,22 @@ public class NotificationService {
 				notification.setUnread(false);
 				notificationRepository.save(notification);
 			});
+	}
+
+	public void subscribe(User user, SubscribeRequest dto) {
+
+		fcmTokenRepository.findByUser(user)
+			.ifPresentOrElse(
+				fcmToken -> {
+					fcmToken.setToken(dto.token());
+					fcmTokenRepository.save(fcmToken);
+				},
+				() -> fcmTokenRepository.save(
+					FcmToken.builder()
+						.user(user)
+						.token(dto.token())
+						.build()
+				)
+			);
 	}
 }

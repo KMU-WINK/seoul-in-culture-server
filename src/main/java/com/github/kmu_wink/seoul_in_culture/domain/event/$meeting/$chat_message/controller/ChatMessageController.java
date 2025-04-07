@@ -56,10 +56,10 @@ public class ChatMessageController {
 	public ApiResponse<SendChatResponse> sendChat(
 		@AuthenticationPrincipal User user,
 		@PathVariable String meetingId,
-		@RequestBody @Valid SendChatRequest dto
+		@RequestBody @Valid SendChatRequest request
 	) {
 
-		return ApiResponse.ok(chatMessageService.sendChat(user, meetingId, dto));
+		return ApiResponse.ok(chatMessageService.sendChat(user, meetingId, request));
 	}
 
 	@PostMapping("/read/all/{meetingId}")

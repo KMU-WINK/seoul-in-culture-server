@@ -36,4 +36,6 @@ dependencies {
     implementation 'com.auth0:java-jwt:4.4.0'
     implementation 'com.konghq:unirest-java-core:4.4.5'
     implementation 'com.konghq:unirest-objectmapper-jackson:4.2.9'
+
+    implementation 'com.google.firebase:firebase-admin:9.4.3'
 }

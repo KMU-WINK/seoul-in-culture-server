@@ -1,9 +1,9 @@
 package com.github.kmu_wink.seoul_in_culture;
 
+import java.util.TimeZone;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import java.util.TimeZone;
 
 @SpringBootApplication
 public class SeoulInCultureApplication {
