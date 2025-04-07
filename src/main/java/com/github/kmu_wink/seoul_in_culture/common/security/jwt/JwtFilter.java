@@ -3,7 +3,6 @@ package com.github.kmu_wink.seoul_in_culture.common.security.jwt;
 import static com.github.kmu_wink.seoul_in_culture.domain.auth.exception.AuthExceptions.*;
 
 import java.io.IOException;
-import java.util.stream.Stream;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -52,7 +51,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (TokenExpiredException e) {
-            handleException(response, AuthException.of(EXPIRED_ACCESS_TOKEN));
+            handleException(response, AuthException.of(EXPIRED_TOKEN));
             return;
         } catch (ApiException e) {
             handleException(response, e);
@@ -80,13 +79,5 @@ public class JwtFilter extends OncePerRequestFilter {
         response.addHeader("Content-Type", "application/json");
         response.getWriter().write(content);
         response.getWriter().flush();
-    }
-
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-
-        String uri  = request.getRequestURI();
-
-        return Stream.of("/api/auth/refresh-token").anyMatch(uri::equalsIgnoreCase);
     }
 }

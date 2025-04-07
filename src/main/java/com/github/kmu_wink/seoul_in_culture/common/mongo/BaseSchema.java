@@ -1,4 +1,4 @@
-package com.github.kmu_wink.seoul_in_culture.common.database.mongo;
+package com.github.kmu_wink.seoul_in_culture.common.mongo;
 
 import java.time.LocalDateTime;
 
