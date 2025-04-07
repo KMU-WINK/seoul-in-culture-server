@@ -9,6 +9,7 @@ import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 import com.github.kmu_wink.seoul_in_culture.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class UserController {
     @PutMapping
     @Operation(summary = "프로필 수정", description = "유저의 프로필 수정합니다.")
     public ApiResponse<UserEditResponse> editUser(
-            @RequestBody UserEditRequest request,
+            @RequestBody @Valid UserEditRequest request,
             @AuthenticationPrincipal User user
     ) {
         return ApiResponse.ok(userService.editUser(user, request));
@@ -41,7 +42,7 @@ public class UserController {
     @GetMapping("/{userId}")
     @Operation(summary = "다른 유저 상세 페이지 조회", description = "다른 유저의 상세 페이지를 조회합니다.")
     public ApiResponse<OtherDetailResponse> getOtherDetail(
-            @PathVariable String userId
+            @PathVariable("userId") String userId
     ) {
         return ApiResponse.ok(userService.getOtherDetail(userId));
     }

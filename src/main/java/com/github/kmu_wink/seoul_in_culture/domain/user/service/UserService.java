@@ -1,11 +1,13 @@
 package com.github.kmu_wink.seoul_in_culture.domain.user.service;
 
+import com.github.kmu_wink.seoul_in_culture.common.auth.AuthGuard;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.repository.BookmarkRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.schema.Bookmark;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$participant.repository.MeetingParticipantRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$participant.schema.MeetingParticipant;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.repository.MeetingReviewRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.schema.MeetingReview;
+import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.schema.Meeting;
 import com.github.kmu_wink.seoul_in_culture.domain.user.dto.*;
 import com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserNotFoundException;
 import com.github.kmu_wink.seoul_in_culture.domain.user.repository.UserRepository;
@@ -26,7 +28,7 @@ public class UserService {
     private final BookmarkRepository bookmarkRepository;
     private final MeetingParticipantRepository meetingParticipantRepository;
 
-    @Transactional
+    @AuthGuard
     public UserEditResponse editUser(User user, UserEditRequest request) {
         user.setAvatar(request.avatar());
         user.setNickname(request.nickname());
@@ -40,67 +42,54 @@ public class UserService {
                 .build();
     }
 
+    @AuthGuard
     public MyDetailResponse getMyDetail(User user) {
-        UserDto userDto = UserDto.builder()
-                .user(user)
-                .build();
 
         List<Bookmark> bookmarks = bookmarkRepository.findTop2ByUserOrderByCreatedAtDesc(user);
-        List<BookmarkDto> bookmarkDtos = bookmarks.stream()
-                .map(b -> BookmarkDto.builder()
-                        .bookmark(b)
-                        .build())
-                .toList();
 
         int joinedMeetings = meetingParticipantRepository.countByUserAndHostFalse(user);
         int hostedMeetings = meetingParticipantRepository.countByUserAndHostTrue(user);
 
-        List<MeetingReview> meetingReviews = meetingReviewRepository.findTop2ByTargetUserOrderByCreatedAtDesc(user);
-        List<ReviewDto> reviewDtos = meetingReviews.stream()
-                .map(r -> ReviewDto.builder()
-                        .review(r)
-                        .build())
+
+        List<MeetingReview> meetingReviews = meetingParticipantRepository.findAllByUser(user)
+                .stream()
+                .flatMap(p -> meetingReviewRepository.findAllByTarget(p).stream())
+                .limit(2)
                 .toList();
 
         return MyDetailResponse.builder()
-                .user(userDto)
-                .bookmark(bookmarkDtos)
+                .user(user)
+                .bookmark(bookmarks)
                 .joinedMeeting(joinedMeetings)
                 .hostedMeeting(hostedMeetings)
-                .review(reviewDtos)
+                .review(meetingReviews)
                 .build();
     }
 
     public OtherDetailResponse getOtherDetail(String userId) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
-        UserDto userDto = UserDto.builder()
-                .user(user)
-                .build();
-
         int bookmarkCount = bookmarkRepository.countByUser(user);
         int joinedMeetings = meetingParticipantRepository.countByUserAndHostFalse(user);
 
-        List<MeetingReview> recentReviews = meetingReviewRepository.findTop2ByTargetUserOrderByCreatedAtDesc(user);
-        List<ReviewDto> reviewDtos = recentReviews.stream()
-                .map(r -> ReviewDto.builder()
-                        .review(r)
-                        .build())
+        List<MeetingReview> meetingReviews = meetingParticipantRepository.findAllByUser(user)
+                .stream()
+                .flatMap(p -> meetingReviewRepository.findAllByTarget(p).stream())
+                .limit(2)
                 .toList();
 
-        List<MeetingParticipant> hostedParticipants = meetingParticipantRepository.findAllByUserAndHostTrue(user);
-        List<MeetingDto> hostedMeetingDtos = hostedParticipants.stream()
-                .map(mp -> MeetingDto.builder()
-                        .meetingParticipant(mp)
-                        .build())
+        List<Meeting> hostedParticipants = meetingParticipantRepository.findAllByUserAndHostTrue(user)
+                .stream()
+                .map(MeetingParticipant::getMeeting)
                 .toList();
+
 
         return OtherDetailResponse.builder()
-                .user(userDto)
+                .user(user)
                 .bookmark(bookmarkCount)
                 .joinedMeeting(joinedMeetings)
-                .review(reviewDtos)
-                .hostedMeeting(hostedMeetingDtos)
+                .review(meetingReviews)
+                .hostedMeeting(hostedParticipants)
                 .build();
     }
 }
