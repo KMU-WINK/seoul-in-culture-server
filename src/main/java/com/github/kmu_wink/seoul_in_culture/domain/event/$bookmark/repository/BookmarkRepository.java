@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BookmarkRepository extends MongoRepository<Bookmark, String> {
@@ -18,4 +19,6 @@ public interface BookmarkRepository extends MongoRepository<Bookmark, String> {
     List<Bookmark> findByUser(User user);
 
     boolean existsByUserAndEvent(User user, Event event);
+
+    Optional<Bookmark> findByUserAndEvent(User user, Event event);
 }

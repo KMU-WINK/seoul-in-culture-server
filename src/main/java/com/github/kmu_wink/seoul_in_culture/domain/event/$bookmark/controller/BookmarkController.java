@@ -38,4 +38,15 @@ public class BookmarkController {
 
         return ApiResponse.ok();
     }
+
+    @DeleteMapping("/{eventId}")
+    @Operation(summary = "북마크 삭제")
+    public ApiResponse<Void> deleteBookmark(
+            @AuthenticationPrincipal User user,
+            @PathVariable String eventId
+    ) {
+        bookmarkService.deleteBookmark(user, eventId);
+
+        return ApiResponse.ok();
+    }
 }
