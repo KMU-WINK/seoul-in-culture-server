@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @AuthGuard
 @RestController
 @RequestMapping("/bookmark")
@@ -26,7 +24,7 @@ public class BookmarkController {
 
     @GetMapping
     @Operation(summary = "북마크 조회")
-    public ApiResponse<List<GetBookmarkResponse>> getBookmark(
+    public ApiResponse<GetBookmarkResponse> getBookmark(
             @AuthenticationPrincipal User user
     ) {
         return ApiResponse.ok(bookmarkService.getBookmark(user));
