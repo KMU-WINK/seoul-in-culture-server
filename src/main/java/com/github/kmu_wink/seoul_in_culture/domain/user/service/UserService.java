@@ -31,8 +31,8 @@ public class UserService {
         return GetMyInfoResponse.builder()
             .user(user)
             .bookmark(bookmarkRepository.findTop2ByUserOrderByCreatedAtDesc(user))
-            .joinedMeeting(meetingRepository.countByParticipantsContainingAndHostIsFalse(user))
-            .hostedMeeting(meetingRepository.countByParticipantsContainingAndHostIsTrue(user))
+            .joinedMeeting(meetingRepository.countByParticipantsContaining(user))
+            .hostedMeeting(meetingRepository.countByHost(user))
             .review(meetingReviewRepository.findTop2ByTarget(user))
             .build();
     }
@@ -41,11 +41,11 @@ public class UserService {
 
         User user = userRepository.findById(userId).orElseThrow(() -> UserException.of(USER_NOT_FOUND));
 
-        return GetOtherInfoResponse.builder()
+		return GetOtherInfoResponse.builder()
             .user(user)
             .bookmark(bookmarkRepository.countByUser(user))
-            .joinedMeeting(meetingRepository.countByParticipantsContainingAndHostIsFalse(user))
-            .hostedMeeting(meetingRepository.findAllByParticipantsContainingAndHostIsTrue(user))
+            .joinedMeeting(meetingRepository.countByParticipantsContaining(user))
+            .hostedMeeting(meetingRepository.findAllByHost(user))
             .review(meetingReviewRepository.findTop2ByTarget(user))
             .build();
     }
