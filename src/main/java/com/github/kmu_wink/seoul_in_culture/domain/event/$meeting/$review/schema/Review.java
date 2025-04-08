@@ -15,7 +15,7 @@ import lombok.EqualsAndHashCode;
 @Builder
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class MeetingReview extends BaseSchema {
+public class Review extends BaseSchema {
 
 	@DBRef
 	Meeting meeting;

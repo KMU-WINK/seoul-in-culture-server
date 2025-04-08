@@ -3,7 +3,7 @@ package com.github.kmu_wink.seoul_in_culture.domain.user.dto.response;
 import java.util.Collection;
 
 import com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.schema.Bookmark;
-import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.schema.MeetingReview;
+import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.schema.Review;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 
 import lombok.Builder;
@@ -18,7 +18,7 @@ public record GetMyInfoResponse(
         int joinedMeeting,
         int hostedMeeting,
 
-		Collection<MeetingReview> review
+		Collection<Review> review
 ) {
 }
 

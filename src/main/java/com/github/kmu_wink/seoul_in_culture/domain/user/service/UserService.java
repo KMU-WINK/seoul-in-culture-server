@@ -5,7 +5,7 @@ import static com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserExc
 import org.springframework.stereotype.Service;
 
 import com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.repository.BookmarkRepository;
-import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.repository.MeetingReviewRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.repository.ReviewRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.repository.MeetingRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.user.dto.request.UserEditRequest;
 import com.github.kmu_wink.seoul_in_culture.domain.user.dto.response.GetMyInfoResponse;
@@ -24,7 +24,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final MeetingRepository meetingRepository;
     private final BookmarkRepository bookmarkRepository;
-    private final MeetingReviewRepository meetingReviewRepository;
+    private final ReviewRepository reviewRepository;
 
     public GetMyInfoResponse getMyInfo(User user) {
 
@@ -33,7 +33,7 @@ public class UserService {
             .bookmark(bookmarkRepository.findTop2ByUserOrderByCreatedAtDesc(user))
             .joinedMeeting(meetingRepository.countByParticipantsContaining(user))
             .hostedMeeting(meetingRepository.countByHost(user))
-            .review(meetingReviewRepository.findTop2ByTarget(user))
+            .review(reviewRepository.findTop2ByTarget(user))
             .build();
     }
 
@@ -46,7 +46,7 @@ public class UserService {
             .bookmark(bookmarkRepository.countByUser(user))
             .joinedMeeting(meetingRepository.countByParticipantsContaining(user))
             .hostedMeeting(meetingRepository.findAllByHost(user))
-            .review(meetingReviewRepository.findTop2ByTarget(user))
+            .review(reviewRepository.findTop2ByTarget(user))
             .build();
     }
 
