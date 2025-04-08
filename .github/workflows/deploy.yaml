@@ -20,6 +20,11 @@ jobs:
           mkdir -p src/main/resources
           echo "${{ secrets.APPLICATION_YAML }}" > src/main/resources/application.yaml
 
+      - name: Create firebase-adminsdk.json from secrets
+        run: |
+          mkdir -p src/main/resources
+          printf '%s' "${{ secrets.FIREBASE_ADMIN_SDK }}" > src/main/resources/firebase-adminsdk.json
+
       - name: Insecure Docker Repository
         run: |
           echo "{\"insecure-registries\": [\"${{ secrets.DOCKER_REGISTRY }}\"]}" | sudo tee /etc/docker/daemon.json > /dev/null
