@@ -11,10 +11,9 @@ import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 @Repository
 public interface MeetingRepository extends MongoRepository<Meeting, String> {
 
+	List<Meeting> findAllByHost(User user);
 	List<Meeting> findAllByParticipantsContaining(User user);
 
-	List<Meeting> findAllByParticipantsContainingAndHostIsTrue(User user);
-
-	int countByParticipantsContainingAndHostIsTrue(User user);
-	int countByParticipantsContainingAndHostIsFalse(User user);
+	int countByHost(User user);
+	int countByParticipantsContaining(User user);
 }
