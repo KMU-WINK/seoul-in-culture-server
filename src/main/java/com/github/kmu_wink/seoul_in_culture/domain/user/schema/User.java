@@ -1,5 +1,7 @@
 package com.github.kmu_wink.seoul_in_culture.domain.user.schema;
 
+import java.time.LocalDate;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.kmu_wink.seoul_in_culture.common.mongo.BaseSchema;
 
@@ -28,6 +30,10 @@ public class User extends BaseSchema {
     Gender gender;
 
     boolean meetingOpen;
+
+    public int getAge() {
+        return LocalDate.now().getYear() - birthYear + 1;
+    }
 
     public enum Gender {
         MALE, FEMALE
