@@ -28,7 +28,7 @@ public class BookmarkController {
         return ApiResponse.ok(bookmarkService.getBookmark(user));
     }
 
-    @PostMapping("{eventId}")
+    @PostMapping("/{eventId}")
     @Operation(summary = "북마크 추가")
     public ApiResponse<Void> postBookmark(
             @AuthenticationPrincipal User user,
