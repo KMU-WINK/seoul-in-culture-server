@@ -7,6 +7,6 @@ import java.util.List;
 
 @Builder
 public record GetBookmarkResponse(
-        List<Event> eventList
+        List<Event> bookmark
 ) {
 }

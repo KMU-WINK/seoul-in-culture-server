@@ -28,13 +28,15 @@ public class BookmarkService {
                 .toList();
 
         return GetBookmarkResponse.builder()
-                .eventList(eventList)
+                .bookmark(eventList)
                 .build();
     }
 
     public void postBookmark(User user, String eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> EventException.of(EVENT_NOT_FOUND));
+
+        if (bookmarkRepository.existsByUserAndEvent(user, event)) return;
 
         Bookmark bookmark = Bookmark.builder()
                 .user(user)
