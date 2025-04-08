@@ -1,7 +1,6 @@
 package com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.service;
 
 import com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.dto.response.GetBookmarkResponse;
-import com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.exception.BookmarkException;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.repository.BookmarkRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.schema.Bookmark;
 import com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventException;
@@ -12,8 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
-import static com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.exception.BookmarkExceptions.BOOKMARK_NOT_FOUND;
 import static com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventExceptions.EVENT_NOT_FOUND;
 
 @Service
@@ -52,9 +51,8 @@ public class BookmarkService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> EventException.of(EVENT_NOT_FOUND));
 
-        Bookmark bookmark = bookmarkRepository.findByUserAndEvent(user, event)
-                .orElseThrow(() -> BookmarkException.of(BOOKMARK_NOT_FOUND));
-
-        bookmarkRepository.delete(bookmark);
+        Optional<Bookmark> bookmark = bookmarkRepository.findByUserAndEvent(user, event);
+        if (bookmark.isEmpty()) return;
+        bookmarkRepository.delete(bookmark.get());
     }
 }
