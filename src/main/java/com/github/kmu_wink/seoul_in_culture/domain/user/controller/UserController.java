@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.github.kmu_wink.seoul_in_culture.common.api.ApiResponse;
+import com.github.kmu_wink.seoul_in_culture.common.security.authentication.AuthGuard;
 import com.github.kmu_wink.seoul_in_culture.domain.user.dto.request.UserEditRequest;
 import com.github.kmu_wink.seoul_in_culture.domain.user.dto.response.GetMyInfoResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.user.dto.response.GetOtherInfoResponse;
@@ -29,6 +30,7 @@ public class UserController {
 
     private final UserService userService;
 
+    @AuthGuard
     @GetMapping
     @Operation(summary = "내 상세 페이지 조회")
     public ApiResponse<GetMyInfoResponse> getMyDetailInfo(
@@ -47,6 +49,7 @@ public class UserController {
         return ApiResponse.ok(userService.getOtherInfo(userId));
     }
 
+    @AuthGuard
     @PutMapping
     @Operation(summary = "프로필 수정")
     public ApiResponse<UpdateMyInfoResponse> updateMyInfo(
