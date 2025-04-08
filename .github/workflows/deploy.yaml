@@ -23,7 +23,7 @@ jobs:
       - name: Create firebase-adminsdk.json from secrets
         run: |
           mkdir -p src/main/resources
-          printf '%s' "${{ secrets.FIREBASE_ADMIN_SDK }}" > src/main/resources/firebase-adminsdk.json
+          echo "${{ secrets.FIREBASE_ADMIN_SDK }}" | base64 -d > src/main/resources/firebase-adminsdk.json
 
       - name: Insecure Docker Repository
         run: |
