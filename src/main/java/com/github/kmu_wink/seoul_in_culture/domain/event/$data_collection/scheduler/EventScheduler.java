@@ -52,8 +52,6 @@ public class EventScheduler {
                         .homepage(eventRequest.getHomepageUrl())
                         .build();
 
-                // MongoDB에 저장
-//                mongoTemplate.save(event);
 
                 saveOrUpdateEvent(event);
                 log.info("이벤트 '{}' 저장 완료", event.getTitle());
@@ -88,7 +86,7 @@ public class EventScheduler {
     // 지역 파싱 메서드 (예시)
     private User.District parseDistrict(String district) {
         try {
-            return User.District.valueOf(district);
+            return User.District.valueOf(district.trim());
         } catch (IllegalArgumentException e) {
             log.warn("잘못된 구명 값: {}", district);
             return null;  // 기본값 설정
