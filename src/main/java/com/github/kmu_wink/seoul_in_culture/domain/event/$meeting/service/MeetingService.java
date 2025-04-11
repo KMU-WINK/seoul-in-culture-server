@@ -18,6 +18,8 @@ import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class MeetingService {

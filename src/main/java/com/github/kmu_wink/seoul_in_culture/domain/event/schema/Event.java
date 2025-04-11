@@ -1,14 +1,12 @@
 package com.github.kmu_wink.seoul_in_culture.domain.event.schema;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.github.kmu_wink.seoul_in_culture.common.mongo.BaseSchema;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 @Data
 @Builder
@@ -20,9 +18,10 @@ public class Event extends BaseSchema {
 
     String image;
     String title;
+    String description;
 
-    LocalDate startDate;
-    LocalDate endDate;
+    LocalDateTime startDate;
+    LocalDateTime endDate;
 
     String host;
     User.District district;
