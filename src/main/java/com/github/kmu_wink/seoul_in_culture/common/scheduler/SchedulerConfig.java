@@ -1,4 +1,4 @@
-package com.github.kmu_wink.seoul_in_culture.domain.event.$data_collection.config;
+package com.github.kmu_wink.seoul_in_culture.common.scheduler;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;

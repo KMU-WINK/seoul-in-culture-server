@@ -11,8 +11,9 @@ spring:
 app:
   jwt:
     key: ${JWT_KEY}
-    expiration-hours: 720
   kakao:
     client-id: ${KAKAO_CLIENT_ID}
     client-secret: ${KAKAO_CLIENT_SECRET}
     redirect-url: ${KAKAO_CALLBACK_URL}
+  seoul-data:
+    key: ${SEOUL_DATA_API_KEY}

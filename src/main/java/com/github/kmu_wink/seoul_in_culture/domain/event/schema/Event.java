@@ -1,12 +1,15 @@
 package com.github.kmu_wink.seoul_in_culture.domain.event.schema;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 import com.github.kmu_wink.seoul_in_culture.common.mongo.BaseSchema;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import lombok.*;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -14,22 +17,57 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = true)
 public class Event extends BaseSchema {
 
+    int dataId;
+
+    @Nonnull
     Category category;
 
+    @Nonnull
     String image;
+
+    @Nonnull
     String title;
+
+    @Nonnull
+    LocalDate startDate;
+
+    @Nonnull
+    LocalDate endDate;
+
+    @Nonnull
+    LocalDate applicationDate;
+
+    @Nonnull
+    String host;
+
+    @Nullable
+    User.District district;
+
+    @Nonnull
+    String location;
+
+    double latitude;
+    double longitude;
+
+    @Nonnull
+    String target;
+
+    @Nonnull
+    String homepage;
+
+    boolean free;
+
+    @Nullable
+    String cost;
+
+    @Nullable
+    String cast;
+
+    @Nullable
     String description;
 
-    LocalDateTime startDate;
-    LocalDateTime endDate;
-
-    String host;
-    User.District district;
-    String location;
-    String target;
-    boolean free;
-    String cost;
-    String homepage;
+    @Nullable
+    String other;
 
     public enum Category {
 
