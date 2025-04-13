@@ -5,7 +5,7 @@ import lombok.Builder;
 @Builder
 public record KakaoUser(
 
-	long id,
-	String email
+        long id,
+        String email
 ) {
 }

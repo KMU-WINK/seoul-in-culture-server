@@ -1,13 +1,5 @@
 package com.github.kmu_wink.seoul_in_culture.common.security.jwt;
 
-import static com.github.kmu_wink.seoul_in_culture.domain.auth.exception.AuthExceptions.*;
-
-import java.io.IOException;
-
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kmu_wink.seoul_in_culture.common.api.ApiException;
@@ -16,13 +8,20 @@ import com.github.kmu_wink.seoul_in_culture.common.security.authentication.UserA
 import com.github.kmu_wink.seoul_in_culture.domain.auth.exception.AuthException;
 import com.github.kmu_wink.seoul_in_culture.domain.user.repository.UserRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
-
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+
+import static com.github.kmu_wink.seoul_in_culture.domain.auth.exception.AuthExceptions.EXPIRED_TOKEN;
+import static com.github.kmu_wink.seoul_in_culture.domain.auth.exception.AuthExceptions.FAIL_AUTHENTICATION;
 
 @Component
 @RequiredArgsConstructor

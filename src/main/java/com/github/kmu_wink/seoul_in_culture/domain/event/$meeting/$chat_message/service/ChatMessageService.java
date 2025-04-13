@@ -1,19 +1,5 @@
 package com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.service;
 
-import static com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.exception.ChatMessageExceptions.*;
-import static com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.exception.MeetingExceptions.*;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.dto.request.SendChatRequest;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.dto.response.ChatInfoResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.dto.response.RoomListResponse;
@@ -25,129 +11,139 @@ import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.exception.Meet
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.repository.MeetingRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.schema.Meeting;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import static com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.exception.ChatMessageExceptions.MESSAGE_NOT_FOUND;
+import static com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.exception.MeetingExceptions.MEETING_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
 public class ChatMessageService {
 
-	private final MeetingRepository meetingRepository;
-	private final ChatMessageRepository chatMessageRepository;
+    private static final Long DEFAULT_SSE_TIMEOUT = 60L * 1000 * 60;
+    private final MeetingRepository meetingRepository;
+    private final ChatMessageRepository chatMessageRepository;
+    private final Map<Meeting, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
 
-	private final Map<Meeting, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
+    public RoomListResponse getRoomList(User user) {
 
-	private static final Long DEFAULT_SSE_TIMEOUT = 60L * 1000 * 60;
+        List<RoomListResponse.Room> rooms = meetingRepository.findAllByParticipantsContaining(user)
+                .stream()
+                .map(meeting -> RoomListResponse.Room.builder()
+                        .meeting(meeting)
+                        .last(chatMessageRepository.findLastByMeeting(meeting).orElse(null))
+                        .build())
+                .toList();
 
-	public RoomListResponse getRoomList(User user) {
+        return RoomListResponse.builder()
+                .rooms(rooms)
+                .build();
+    }
 
-		List<RoomListResponse.Room> rooms = meetingRepository.findAllByParticipantsContaining(user)
-			.stream()
-			.map(meeting -> RoomListResponse.Room.builder()
-				.meeting(meeting)
-				.last(chatMessageRepository.findLastByMeeting(meeting).orElse(null))
-				.build())
-			.toList();
+    public ChatInfoResponse getChatInfo(User user, String meetingId) {
 
-		return RoomListResponse.builder()
-			.rooms(rooms)
-			.build();
-	}
+        Meeting meeting = meetingRepository.findById(meetingId)
+                .filter(x -> x.getParticipants().contains(user))
+                .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
-	public ChatInfoResponse getChatInfo(User user, String meetingId) {
+        return ChatInfoResponse.builder()
+                .participants(meeting.getParticipants())
+                .messages(chatMessageRepository.findAllByMeeting(meeting))
+                .build();
+    }
 
-		Meeting meeting = meetingRepository.findById(meetingId)
-			.filter(x -> x.getParticipants().contains(user))
-			.orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+    public SendChatResponse sendChat(User user, String meetingId, @Valid SendChatRequest dto) {
 
-		return ChatInfoResponse.builder()
-			.participants(meeting.getParticipants())
-			.messages(chatMessageRepository.findAllByMeeting(meeting))
-			.build();
-	}
+        Meeting meeting = meetingRepository.findById(meetingId)
+                .filter(x -> x.getParticipants().contains(user))
+                .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
-	public SendChatResponse sendChat(User user, String meetingId, @Valid SendChatRequest dto) {
+        ChatMessage chatMessage = chatMessageRepository.save(
+                ChatMessage.builder()
+                        .meeting(meeting)
+                        .user(user)
+                        .content(dto.content())
+                        .unread(meeting.getParticipants())
+                        .build()
+        );
 
-		Meeting meeting = meetingRepository.findById(meetingId)
-			.filter(x -> x.getParticipants().contains(user))
-			.orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+        emitters.getOrDefault(meeting, Collections.emptyList()).forEach(emitter -> {
 
-		ChatMessage chatMessage = chatMessageRepository.save(
-			ChatMessage.builder()
-				.meeting(meeting)
-				.user(user)
-				.content(dto.content())
-				.unread(meeting.getParticipants())
-				.build()
-		);
+            try {
+                emitter.send(
+                        SseEmitter.event()
+                                .id(chatMessage.getId())
+                                .name("send_chat")
+                                .data(chatMessage)
+                );
+            } catch (IOException ignored) {
+                emitters.getOrDefault(meeting, Collections.emptyList()).remove(emitter);
+            }
+        });
 
-		emitters.getOrDefault(meeting, Collections.emptyList()).forEach(emitter -> {
+        return SendChatResponse.builder()
+                .message(chatMessage)
+                .build();
+    }
 
-			try {
-				emitter.send(
-					SseEmitter.event()
-						.id(chatMessage.getId())
-						.name("send_chat")
-						.data(chatMessage)
-				);
-			} catch (IOException ignored) {
-				emitters.getOrDefault(meeting, Collections.emptyList()).remove(emitter);
-			}
-		});
+    public void readAllChat(User user, String meetingId) {
 
-		return SendChatResponse.builder()
-			.message(chatMessage)
-			.build();
-	}
+        Meeting meeting = meetingRepository.findById(meetingId)
+                .filter(x -> x.getParticipants().contains(user))
+                .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
-	public void readAllChat(User user, String meetingId) {
+        chatMessageRepository.findAllByMeeting(meeting).forEach(chatMessage -> {
+            chatMessage.getUnread().remove(user);
+            chatMessageRepository.save(chatMessage);
+        });
+    }
 
-		Meeting meeting = meetingRepository.findById(meetingId)
-			.filter(x -> x.getParticipants().contains(user))
-			.orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+    public void readChat(User user, String chattingId) {
 
-		chatMessageRepository.findAllByMeeting(meeting).forEach(chatMessage -> {
-			chatMessage.getUnread().remove(user);
-			chatMessageRepository.save(chatMessage);
-		});
-	}
+        ChatMessage chatMessage = chatMessageRepository.findById(chattingId)
+                .filter(x -> x.getMeeting().getParticipants().contains(user))
+                .orElseThrow(() -> ChatMessageException.of(MESSAGE_NOT_FOUND));
 
-	public void readChat(User user, String chattingId) {
+        chatMessage.getUnread().remove(user);
 
-		ChatMessage chatMessage = chatMessageRepository.findById(chattingId)
-			.filter(x -> x.getMeeting().getParticipants().contains(user))
-			.orElseThrow(() -> ChatMessageException.of(MESSAGE_NOT_FOUND));
+        chatMessageRepository.save(chatMessage);
+    }
 
-		chatMessage.getUnread().remove(user);
+    public SseEmitter openSseTunnel(User user, String meetingId) {
 
-		chatMessageRepository.save(chatMessage);
-	}
+        Meeting meeting = meetingRepository.findById(meetingId)
+                .filter(x -> x.getParticipants().contains(user))
+                .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
-	public SseEmitter openSseTunnel(User user, String meetingId) {
+        SseEmitter emitter = new SseEmitter(DEFAULT_SSE_TIMEOUT);
 
-		Meeting meeting = meetingRepository.findById(meetingId)
-			.filter(x -> x.getParticipants().contains(user))
-			.orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+        emitter.onCompletion(() -> emitters.getOrDefault(meeting, Collections.emptyList()).remove(emitter));
+        emitter.onTimeout(() -> emitters.getOrDefault(meeting, Collections.emptyList()).remove(emitter));
 
-		SseEmitter emitter = new SseEmitter(DEFAULT_SSE_TIMEOUT);
+        emitters.computeIfAbsent(meeting, x -> new CopyOnWriteArrayList<>()).add(emitter);
 
-		emitter.onCompletion(() -> emitters.getOrDefault(meeting, Collections.emptyList()).remove(emitter));
-		emitter.onTimeout(() -> emitters.getOrDefault(meeting, Collections.emptyList()).remove(emitter));
+        try {
+            emitter.send(
+                    SseEmitter.event()
+                            .id(UUID.randomUUID().toString())
+                            .name("ping")
+                            .build()
+            );
+        } catch (IOException e) {
+            emitters.getOrDefault(meeting, Collections.emptyList()).remove(emitter);
+        }
 
-		emitters.computeIfAbsent(meeting, x -> new CopyOnWriteArrayList<>()).add(emitter);
-
-		try {
-			emitter.send(
-				SseEmitter.event()
-					.id(UUID.randomUUID().toString())
-					.name("ping")
-					.build()
-			);
-		} catch (IOException e) {
-			emitters.getOrDefault(meeting, Collections.emptyList()).remove(emitter);
-		}
-
-		return emitter;
-	}
+        return emitter;
+    }
 }

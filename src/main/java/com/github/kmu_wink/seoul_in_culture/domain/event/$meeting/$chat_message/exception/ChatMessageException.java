@@ -4,14 +4,14 @@ import com.github.kmu_wink.seoul_in_culture.common.api.ApiException;
 
 public class ChatMessageException extends ApiException {
 
-	private ChatMessageException(
-		ChatMessageExceptions chatMessageExceptions) {
+    private ChatMessageException(
+            ChatMessageExceptions chatMessageExceptions) {
 
-		super(chatMessageExceptions.getMessage());
-	}
+        super(chatMessageExceptions.getMessage());
+    }
 
-	public static ChatMessageException of(ChatMessageExceptions chatMessageExceptions) {
+    public static ChatMessageException of(ChatMessageExceptions chatMessageExceptions) {
 
-		return new ChatMessageException(chatMessageExceptions);
-	}
+        return new ChatMessageException(chatMessageExceptions);
+    }
 }

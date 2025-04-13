@@ -1,15 +1,13 @@
 package com.github.kmu_wink.seoul_in_culture.domain.notification.schema;
 
-import org.springframework.data.mongodb.core.mapping.DBRef;
-
 import com.github.kmu_wink.seoul_in_culture.common.mongo.BaseSchema;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.NotificationDetail;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 
 @Data
 @Builder
@@ -17,20 +15,20 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class Notification extends BaseSchema {
 
-	Type type;
+    Type type;
 
-	NotificationDetail detail;
+    NotificationDetail detail;
 
-	@DBRef
-	User user;
+    @DBRef
+    User user;
 
-	boolean unread;
+    boolean unread;
 
-	public enum Type {
+    public enum Type {
 
-		MEETING_JOIN,
-		MEETING_LEAVE,
-		MEETING_HOST_DELEGATE,
-		MEETING_REVIEW
-	}
+        MEETING_JOIN,
+        MEETING_LEAVE,
+        MEETING_HOST_DELEGATE,
+        MEETING_REVIEW
+    }
 }
