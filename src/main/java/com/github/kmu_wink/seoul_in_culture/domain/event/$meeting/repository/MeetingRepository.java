@@ -11,11 +11,15 @@ import java.util.List;
 @Repository
 public interface MeetingRepository extends MongoRepository<Meeting, String> {
 
-	List<Meeting> findAllByEvent(Event event);
-	List<Meeting> findAllByHost(User user);
-	List<Meeting> findAllByParticipantsContaining(User user);
-	List<Meeting> findAllByParticipantsContainingAndEnd(User user, boolean end);
+    List<Meeting> findAllByEvent(Event event);
 
-	int countByHost(User user);
-	int countByParticipantsContaining(User user);
+    List<Meeting> findAllByHost(User user);
+
+    List<Meeting> findAllByParticipantsContaining(User user);
+
+    List<Meeting> findAllByParticipantsContainingAndEnd(User user, boolean end);
+
+    int countByHost(User user);
+
+    int countByParticipantsContaining(User user);
 }

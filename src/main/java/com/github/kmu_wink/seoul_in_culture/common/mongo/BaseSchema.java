@@ -1,12 +1,11 @@
 package com.github.kmu_wink.seoul_in_culture.common.mongo;
 
-import java.time.LocalDateTime;
-
+import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 
-import lombok.Data;
+import java.time.LocalDateTime;
 
 @Data
 public abstract class BaseSchema {

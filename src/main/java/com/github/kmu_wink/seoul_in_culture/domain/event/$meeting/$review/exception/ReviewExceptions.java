@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ReviewExceptions {
 
-	ALREADY_REVIEW("이미 리뷰를 작성한 유저입니다."),
-	;
+    ALREADY_REVIEW("이미 리뷰를 작성한 유저입니다."),
+    ;
 
-	private final String message;
+    private final String message;
 }

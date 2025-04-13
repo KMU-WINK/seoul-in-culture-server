@@ -6,7 +6,7 @@ import lombok.Builder;
 @Builder
 public record SubscribeRequest(
 
-	@NotBlank
-	String token
+        @NotBlank
+        String token
 ) {
 }

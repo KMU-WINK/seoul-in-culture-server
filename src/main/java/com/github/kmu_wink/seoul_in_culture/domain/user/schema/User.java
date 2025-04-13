@@ -1,14 +1,13 @@
 package com.github.kmu_wink.seoul_in_culture.domain.user.schema;
 
-import java.time.LocalDate;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.kmu_wink.seoul_in_culture.common.mongo.BaseSchema;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.time.LocalDate;
 
 @Data
 @Builder

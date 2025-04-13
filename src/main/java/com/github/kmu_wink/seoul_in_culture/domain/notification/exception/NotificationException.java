@@ -4,14 +4,14 @@ import com.github.kmu_wink.seoul_in_culture.common.api.ApiException;
 
 public class NotificationException extends ApiException {
 
-	private NotificationException(
-		NotificationExceptions notificationExceptions) {
+    private NotificationException(
+            NotificationExceptions notificationExceptions) {
 
-		super(notificationExceptions.getMessage());
-	}
+        super(notificationExceptions.getMessage());
+    }
 
-	public static NotificationException of(NotificationExceptions notificationExceptions) {
+    public static NotificationException of(NotificationExceptions notificationExceptions) {
 
-		return new NotificationException(notificationExceptions);
-	}
+        return new NotificationException(notificationExceptions);
+    }
 }

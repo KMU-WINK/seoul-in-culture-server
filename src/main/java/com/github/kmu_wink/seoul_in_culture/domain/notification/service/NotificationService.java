@@ -1,9 +1,5 @@
 package com.github.kmu_wink.seoul_in_culture.domain.notification.service;
 
-import static com.github.kmu_wink.seoul_in_culture.domain.notification.exception.NotificationExceptions.*;
-
-import org.springframework.stereotype.Service;
-
 import com.github.kmu_wink.seoul_in_culture.domain.notification.dto.request.SubscribeRequest;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.dto.response.GetNotificationsResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.exception.NotificationException;
@@ -12,57 +8,59 @@ import com.github.kmu_wink.seoul_in_culture.domain.notification.repository.Notif
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.FcmToken;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.Notification;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import static com.github.kmu_wink.seoul_in_culture.domain.notification.exception.NotificationExceptions.NOTIFICATION_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
 
-	private final NotificationRepository notificationRepository;
-	private final FcmTokenRepository fcmTokenRepository;
+    private final NotificationRepository notificationRepository;
+    private final FcmTokenRepository fcmTokenRepository;
 
-	public GetNotificationsResponse getNotifications(User user) {
+    public GetNotificationsResponse getNotifications(User user) {
 
-		return GetNotificationsResponse.builder()
-			.notifications(notificationRepository.findAllByUser(user))
-			.build();
-	}
+        return GetNotificationsResponse.builder()
+                .notifications(notificationRepository.findAllByUser(user))
+                .build();
+    }
 
-	public void readNotification(User user, String notificationId) {
+    public void readNotification(User user, String notificationId) {
 
-		Notification notification = notificationRepository.findById(notificationId)
-			.filter(x -> x.getUser().equals(user))
-			.orElseThrow(() -> NotificationException.of(NOTIFICATION_NOT_FOUND));
+        Notification notification = notificationRepository.findById(notificationId)
+                .filter(x -> x.getUser().equals(user))
+                .orElseThrow(() -> NotificationException.of(NOTIFICATION_NOT_FOUND));
 
-		notification.setUnread(false);
+        notification.setUnread(false);
 
-		notificationRepository.save(notification);
-	}
+        notificationRepository.save(notification);
+    }
 
-	public void readAllNotification(User user) {
+    public void readAllNotification(User user) {
 
-		notificationRepository.findAllByUserAndUnreadIsTrue(user)
-			.forEach(notification -> {
-				notification.setUnread(false);
-				notificationRepository.save(notification);
-			});
-	}
+        notificationRepository.findAllByUserAndUnreadIsTrue(user)
+                .forEach(notification -> {
+                    notification.setUnread(false);
+                    notificationRepository.save(notification);
+                });
+    }
 
-	public void subscribe(User user, SubscribeRequest dto) {
+    public void subscribe(User user, SubscribeRequest dto) {
 
-		fcmTokenRepository.findByUser(user)
-			.ifPresentOrElse(
-				fcmToken -> {
-					fcmToken.setToken(dto.token());
-					fcmTokenRepository.save(fcmToken);
-				},
-				() -> fcmTokenRepository.save(
-					FcmToken.builder()
-						.user(user)
-						.token(dto.token())
-						.build()
-				)
-			);
-	}
+        fcmTokenRepository.findByUser(user)
+                .ifPresentOrElse(
+                        fcmToken -> {
+                            fcmToken.setToken(dto.token());
+                            fcmTokenRepository.save(fcmToken);
+                        },
+                        () -> fcmTokenRepository.save(
+                                FcmToken.builder()
+                                        .user(user)
+                                        .token(dto.token())
+                                        .build()
+                        )
+                );
+    }
 }

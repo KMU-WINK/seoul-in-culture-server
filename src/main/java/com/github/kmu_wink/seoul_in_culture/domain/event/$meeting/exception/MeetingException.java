@@ -4,13 +4,13 @@ import com.github.kmu_wink.seoul_in_culture.common.api.ApiException;
 
 public class MeetingException extends ApiException {
 
-	private MeetingException(MeetingExceptions meetingExceptions) {
+    private MeetingException(MeetingExceptions meetingExceptions) {
 
-		super(meetingExceptions.getMessage());
-	}
+        super(meetingExceptions.getMessage());
+    }
 
-	public static MeetingException of(MeetingExceptions meetingExceptions) {
+    public static MeetingException of(MeetingExceptions meetingExceptions) {
 
-		return new MeetingException(meetingExceptions);
-	}
+        return new MeetingException(meetingExceptions);
+    }
 }

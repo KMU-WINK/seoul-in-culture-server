@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ChatMessageExceptions {
 
-	MESSAGE_NOT_FOUND("메시지를 찾을 수 없습니다."),
-	;
+    MESSAGE_NOT_FOUND("메시지를 찾을 수 없습니다."),
+    ;
 
-	private final String message;
+    private final String message;
 }

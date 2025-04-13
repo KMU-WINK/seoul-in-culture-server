@@ -4,13 +4,13 @@ import com.github.kmu_wink.seoul_in_culture.common.api.ApiException;
 
 public class UserException extends ApiException {
 
-	private UserException(UserExceptions userExceptions) {
+    private UserException(UserExceptions userExceptions) {
 
-		super(userExceptions.getMessage());
-	}
+        super(userExceptions.getMessage());
+    }
 
-	public static UserException of(UserExceptions userExceptions) {
+    public static UserException of(UserExceptions userExceptions) {
 
-		return new UserException(userExceptions);
-	}
+        return new UserException(userExceptions);
+    }
 }

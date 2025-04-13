@@ -1,15 +1,13 @@
 package com.github.kmu_wink.seoul_in_culture.common.security.authentication;
 
-import java.util.Collection;
-import java.util.List;
-
+import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
-import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
-
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import java.util.Collection;
+import java.util.List;
 
 @RequiredArgsConstructor
 public class UserAuthentication implements Authentication {

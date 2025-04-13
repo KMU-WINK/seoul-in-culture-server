@@ -1,18 +1,16 @@
 package com.github.kmu_wink.seoul_in_culture.common.security.jwt;
 
-import java.time.Instant;
-import java.util.Objects;
-
-import org.springframework.stereotype.Component;
-
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.github.kmu_wink.seoul_in_culture.common.property.JwtProperty;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
-
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.time.Instant;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor

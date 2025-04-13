@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public record SendChatRequest(
 
-	@NotBlank
-	String content
+        @NotBlank
+        String content
 ) {
 }

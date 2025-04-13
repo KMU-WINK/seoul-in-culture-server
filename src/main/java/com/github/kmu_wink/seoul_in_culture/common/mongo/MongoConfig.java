@@ -14,16 +14,16 @@ import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 @EnableMongoAuditing
 public class MongoConfig {
 
-	@Bean
-	public MappingMongoConverter mappingMongoConverter(
-		MongoDatabaseFactory mongoDatabaseFactory,
-		MongoMappingContext mongoMappingContext
-	) {
+    @Bean
+    public MappingMongoConverter mappingMongoConverter(
+            MongoDatabaseFactory mongoDatabaseFactory,
+            MongoMappingContext mongoMappingContext
+    ) {
 
-		DbRefResolver dbRefResolver = new DefaultDbRefResolver(mongoDatabaseFactory);
-		MappingMongoConverter converter = new MappingMongoConverter(dbRefResolver, mongoMappingContext);
-		converter.setTypeMapper(new DefaultMongoTypeMapper(null));
+        DbRefResolver dbRefResolver = new DefaultDbRefResolver(mongoDatabaseFactory);
+        MappingMongoConverter converter = new MappingMongoConverter(dbRefResolver, mongoMappingContext);
+        converter.setTypeMapper(new DefaultMongoTypeMapper(null));
 
-		return converter;
-	}
+        return converter;
+    }
 }
