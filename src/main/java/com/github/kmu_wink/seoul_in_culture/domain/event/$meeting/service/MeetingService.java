@@ -1,16 +1,7 @@
 package com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.service;
 
-import static com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.exception.MeetingExceptions.*;
-import static com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventExceptions.*;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import org.springframework.stereotype.Service;
-
+import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.repository.ChatMessageRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.repository.ReviewRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.dto.request.CreateMeetingRequest;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.dto.response.GetMeetingResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.dto.response.GetMeetingsResponse;
@@ -20,16 +11,31 @@ import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.schema.Meeting
 import com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventException;
 import com.github.kmu_wink.seoul_in_culture.domain.event.repository.EventRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.event.schema.Event;
+import com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserException;
+import com.github.kmu_wink.seoul_in_culture.domain.user.repository.UserRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import static com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.exception.MeetingExceptions.*;
+import static com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventExceptions.EVENT_NOT_FOUND;
+import static com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserExceptions.USER_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
 public class MeetingService {
 
-	private final MeetingRepository meetingRepository;
+	private final UserRepository userRepository;
 	private final EventRepository eventRepository;
+	private final MeetingRepository meetingRepository;
+	private final ChatMessageRepository chatMessageRepository;
+	private final ReviewRepository reviewRepository;
 
 	private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -135,5 +141,55 @@ public class MeetingService {
 		meeting.getParticipants().remove(user);
 
 		meetingRepository.save(meeting);
+	}
+
+	public GetMeetingResponse endMeeting(User user, String meetingId) {
+
+		Meeting meeting = meetingRepository.findById(meetingId)
+				.filter(x -> x.getParticipants().contains(user))
+				.orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+
+		if (!meeting.getHost().equals(user)) throw MeetingException.of(MEETING_NOT_OWNER);
+
+		meeting.setEnd(true);
+
+		meeting = meetingRepository.save(meeting);
+
+		return GetMeetingResponse.builder()
+				.meeting(meeting)
+				.build();
+	}
+
+	public GetMeetingResponse delegateHost(User user, String meetingId, String targetId) {
+
+		Meeting meeting = meetingRepository.findById(meetingId)
+				.filter(x -> x.getParticipants().contains(user))
+				.orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+
+		if (!meeting.getHost().equals(user)) throw MeetingException.of(MEETING_NOT_OWNER);
+
+		User target = userRepository.findById(targetId).orElseThrow(() -> UserException.of(USER_NOT_FOUND));
+		if (!meeting.getParticipants().contains(target)) throw MeetingException.of(MEETING_NOT_JOINED);
+
+		meeting.setHost(target);
+
+		meeting = meetingRepository.save(meeting);
+
+		return GetMeetingResponse.builder()
+				.meeting(meeting)
+				.build();
+	}
+
+	public void deleteMeeting(User user, String meetingId) {
+
+		Meeting meeting = meetingRepository.findById(meetingId)
+				.filter(x -> x.getParticipants().contains(user))
+				.orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+
+		if (!meeting.getHost().equals(user)) throw MeetingException.of(MEETING_NOT_OWNER);
+
+		chatMessageRepository.deleteAllByMeeting(meeting);
+		reviewRepository.deleteAllByMeeting(meeting);
+		meetingRepository.delete(meeting);
 	}
 }

@@ -31,7 +31,6 @@ public class MeetingController {
 
 	private final MeetingService meetingService;
 
-	// ?active=true : 진행중인 모임 , 지난 모임
 	@AuthGuard
 	@GetMapping("/meeting")
 	@Operation(summary = "내 모임 목록 조회")
@@ -98,4 +97,37 @@ public class MeetingController {
 
 		return ApiResponse.ok();
 	}
+
+    @PostMapping("/meeting/{meetingId}/manage/end")
+    @Operation(summary = "[모임장] 모임 완료하기")
+    public ApiResponse<GetMeetingResponse> endMeeting(
+            @AuthenticationPrincipal User user,
+            @PathVariable String meetingId
+    ) {
+
+        return ApiResponse.ok(meetingService.endMeeting(user, meetingId));
+    }
+
+    @PostMapping("/meeting/{meetingId}/manage/delegate/{targetId}")
+    @Operation(summary = "[모임장] 모임장 위임하기")
+    public ApiResponse<GetMeetingResponse> delegateHost(
+            @AuthenticationPrincipal User user,
+            @PathVariable String meetingId,
+            @PathVariable String targetId
+    ) {
+
+        return ApiResponse.ok(meetingService.delegateHost(user, meetingId, targetId));
+    }
+
+    @DeleteMapping("/meeting/{meetingId}/manage")
+    @Operation(summary = "[모임장] 모임 삭제하기")
+    public ApiResponse<Void> deleteMeeting(
+            @AuthenticationPrincipal User user,
+            @PathVariable String meetingId
+    ) {
+
+        meetingService.deleteMeeting(user, meetingId);
+
+        return ApiResponse.ok();
+    }
 }

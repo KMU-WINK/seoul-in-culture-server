@@ -17,4 +17,6 @@ public interface ReviewRepository extends MongoRepository<Review, String> {
     List<Review> findTop2ByTarget(User user);
 
     boolean existsByMeetingAndAuthorAndTarget(Meeting meeting, User author, User target);
+
+    void deleteAllByMeeting(Meeting meeting);
 }
