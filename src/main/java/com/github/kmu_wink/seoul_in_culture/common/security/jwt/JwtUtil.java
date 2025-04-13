@@ -35,7 +35,6 @@ public class JwtUtil {
 
         return JWT.create()
                 .withIssuedAt(Instant.now())
-                .withExpiresAt(Instant.now().plusSeconds(jwtProperty.getExpirationHours() * 60 * 60L))
                 .withClaim("id", userId)
                 .sign(algorithm);
     }

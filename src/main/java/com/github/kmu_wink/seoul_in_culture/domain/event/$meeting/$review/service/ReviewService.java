@@ -9,6 +9,8 @@ import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.schema
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.exception.MeetingException;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.repository.MeetingRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.schema.Meeting;
+import com.github.kmu_wink.seoul_in_culture.domain.notification.api.NotificationApi;
+import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingReviewDetail;
 import com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserException;
 import com.github.kmu_wink.seoul_in_culture.domain.user.repository.UserRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
@@ -28,6 +30,8 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final MeetingRepository meetingRepository;
     private final ReviewRepository reviewRepository;
+
+	private final NotificationApi notificationApi;
 
     public GetReviewsResponse getReviews(User user) {
 
@@ -73,6 +77,14 @@ public class ReviewService {
                 .build();
 
         review = reviewRepository.save(review);
+
+		notificationApi.sendNotification(
+				targetUser,
+				MeetingReviewDetail.builder()
+						.meeting(meeting)
+						.user(user)
+						.build()
+		);
 
         return GetReviewResponse.builder()
                 .review(review)

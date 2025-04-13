@@ -36,10 +36,13 @@ public class MeetingController {
     @GetMapping("/{eventId}/meeting")
     @Operation(summary = "행사의 모임 목록 조회")
     public ApiResponse<GetMeetingsResponse> getMeetings(
-            @PathVariable String eventId
+            @PathVariable String eventId,
+            @RequestParam(required = false) Integer minAge,
+            @RequestParam(required = false) Integer maxAge,
+            @RequestParam(required = false) User.Gender gender
     ) {
 
-        return ApiResponse.ok(meetingService.getMeetings(eventId));
+        return ApiResponse.ok(meetingService.getMeetings(eventId, minAge, maxAge, gender));
     }
 
     @GetMapping("/meeting/{meetingId}")

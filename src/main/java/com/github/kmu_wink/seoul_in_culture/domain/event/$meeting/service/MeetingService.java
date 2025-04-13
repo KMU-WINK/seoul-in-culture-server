@@ -11,10 +11,15 @@ import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.schema.Meeting
 import com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventException;
 import com.github.kmu_wink.seoul_in_culture.domain.event.repository.EventRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.event.schema.Event;
+import com.github.kmu_wink.seoul_in_culture.domain.notification.api.NotificationApi;
+import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingHostDelegateDetail;
+import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingJoinDetail;
+import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingLeaveDetail;
 import com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserException;
 import com.github.kmu_wink.seoul_in_culture.domain.user.repository.UserRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -37,6 +42,10 @@ public class MeetingService {
     private final ChatMessageRepository chatMessageRepository;
     private final ReviewRepository reviewRepository;
 
+	private final MongoTemplate mongoTemplate;
+
+	private final NotificationApi notificationApi;
+
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public GetMeetingsResponse getMyMeetings(User user, boolean active) {
@@ -48,16 +57,16 @@ public class MeetingService {
                 .build();
     }
 
-    public GetMeetingsResponse getMeetings(String eventId) {
+	public GetMeetingsResponse getMeetings(String eventId, Integer minAge, Integer maxAge, User.Gender gender) {
 
-        Event event = eventRepository.findById(eventId).orElseThrow(() -> EventException.of(EVENT_NOT_FOUND));
+		Event event = eventRepository.findById(eventId).orElseThrow(() -> EventException.of(EVENT_NOT_FOUND));
 
-        List<Meeting> meetings = meetingRepository.findAllByEvent(event);
+        List<Meeting> meetings = meetingRepository.findFilteredMeetings(mongoTemplate, event, minAge, maxAge, gender);
 
-        return GetMeetingsResponse.builder()
-                .meetings(meetings)
-                .build();
-    }
+		return GetMeetingsResponse.builder()
+				.meetings(meetings)
+				.build();
+	}
 
     public GetMeetingResponse getMeeting(String meetingId) {
 
@@ -125,6 +134,18 @@ public class MeetingService {
 
         meeting.getParticipants().add(user);
 
+		meeting.getParticipants().forEach(participant -> {
+			if (participant.equals(user)) return;
+
+			notificationApi.sendNotification(
+					participant,
+					MeetingJoinDetail.builder()
+							.meeting(meeting)
+							.user(user)
+							.build()
+			);
+		});
+
         meetingRepository.save(meeting);
     }
 
@@ -142,6 +163,16 @@ public class MeetingService {
                 .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
         meeting.getParticipants().remove(user);
+
+		meeting.getParticipants().forEach(participant ->
+				notificationApi.sendNotification(
+						participant,
+						MeetingLeaveDetail.builder()
+								.meeting(meeting)
+								.user(user)
+								.build()
+				)
+		);
 
         meetingRepository.save(meeting);
     }
@@ -177,6 +208,15 @@ public class MeetingService {
         meeting.setHost(target);
 
         meeting = meetingRepository.save(meeting);
+
+		Meeting finalMeeting = meeting;
+		meeting.getParticipants().forEach(participant ->
+				notificationApi.sendNotification(
+						participant,
+						MeetingHostDelegateDetail.builder()
+								.meeting(finalMeeting)
+								.build()
+				));
 
         return GetMeetingResponse.builder()
                 .meeting(meeting)

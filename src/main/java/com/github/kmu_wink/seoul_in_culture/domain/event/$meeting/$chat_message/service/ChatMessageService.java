@@ -10,6 +10,8 @@ import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$chat_message.
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.exception.MeetingException;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.repository.MeetingRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.schema.Meeting;
+import com.github.kmu_wink.seoul_in_culture.domain.notification.api.NotificationApi;
+import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.ChatMessageDetail;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,12 +33,16 @@ import static com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.excepti
 @RequiredArgsConstructor
 public class ChatMessageService {
 
-    private static final Long DEFAULT_SSE_TIMEOUT = 60L * 1000 * 60;
     private final MeetingRepository meetingRepository;
     private final ChatMessageRepository chatMessageRepository;
-    private final Map<Meeting, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
 
-    public RoomListResponse getRoomList(User user) {
+	private final NotificationApi notificationApi;
+
+	private static final Map<Meeting, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
+
+	private static final Long DEFAULT_SSE_TIMEOUT = 60L * 1000 * 60;
+
+	public RoomListResponse getRoomList(User user) {
 
         List<RoomListResponse.Room> rooms = meetingRepository.findAllByParticipantsContaining(user)
                 .stream()
@@ -91,6 +97,17 @@ public class ChatMessageService {
                 emitters.getOrDefault(meeting, Collections.emptyList()).remove(emitter);
             }
         });
+
+		meeting.getParticipants().forEach(participant -> {
+			if (participant.equals(user)) return;
+
+			notificationApi.sendNotification(
+					participant,
+					ChatMessageDetail.builder()
+							.message(chatMessage)
+							.build()
+			);
+		});
 
         return SendChatResponse.builder()
                 .message(chatMessage)

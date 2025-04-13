@@ -40,6 +40,10 @@ public class Notification extends BaseSchema {
                 yield String.format("/meetings/%s", detail.getMeeting().getId());
             }
             case MEETING_REVIEW -> "/profile/reviews";
+            case CHAT_MESSAGE -> {
+                ChatMessageDetail detail = (ChatMessageDetail) notificationDetail;
+                yield String.format("/chats?id=%s", detail.getMessage().getMeeting().getId());
+            }
         };
     }
 
@@ -49,6 +53,7 @@ public class Notification extends BaseSchema {
             case MEETING_LEAVE -> "모임에 참여자가 나갔습니다.";
             case MEETING_HOST_DELEGATE -> "모임의 호스트가 변경되었습니다.";
             case MEETING_REVIEW -> "리뷰가 달렸습니다.";
+            case CHAT_MESSAGE -> "새로운 메시지가 왔습니다";
         };
     }
 
@@ -70,6 +75,10 @@ public class Notification extends BaseSchema {
                 MeetingReviewDetail detail = (MeetingReviewDetail) this.detail;
                 yield String.format("%s의 %s님이 리뷰를 달았습니다.", detail.getMeeting().getTitle(), detail.getUser().getNickname());
             }
+            case CHAT_MESSAGE -> {
+                ChatMessageDetail detail = (ChatMessageDetail) this.detail;
+                yield String.format("%s: %s", detail.getMessage().getUser(), detail.getMessage().getContent());
+            }
         };
     }
 
@@ -80,6 +89,7 @@ public class Notification extends BaseSchema {
         MEETING_LEAVE(MeetingLeaveDetail.class),
         MEETING_HOST_DELEGATE(MeetingHostDelegateDetail.class),
         MEETING_REVIEW(MeetingReviewDetail.class),
+        CHAT_MESSAGE(ChatMessageDetail.class),
         ;
 
         private final Class<? extends NotificationDetail> detail;
