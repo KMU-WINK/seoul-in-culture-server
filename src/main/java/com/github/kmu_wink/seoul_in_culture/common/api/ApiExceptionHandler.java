@@ -6,6 +6,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +21,8 @@ public class ApiExceptionHandler {
         return ApiResponse.error("요청하신 리소스를 찾을 수 없습니다.");
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ApiResponse<?> httpMessageNotReadableException(HttpMessageNotReadableException ignored) {
+    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
+    public ApiResponse<?> httpMessageNotReadableException(Exception ignored) {
 
         return ApiResponse.error("요청 데이터가 올바르지 않습니다.");
     }
