@@ -28,6 +28,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.github.kmu_wink.seoul_in_culture.domain.chat.exception.ChatExceptions.MESSAGE_NOT_FOUND;
 import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_NOT_FOUND;
+import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_NOT_JOINED;
 
 @Service
 @RequiredArgsConstructor
@@ -60,7 +61,12 @@ public class ChatService {
     public ChatInfoResponse getChatInfo(User user, String meetingId) {
 
         Meeting meeting = meetingRepository.findById(meetingId)
-                .filter(x -> x.getParticipants().contains(user))
+                .stream()
+                .peek(x -> {
+                    if (!x.getParticipants().contains(user))
+                        throw MeetingException.of(MEETING_NOT_JOINED);
+                })
+                .findFirst()
                 .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
         return ChatInfoResponse.builder()
@@ -72,7 +78,12 @@ public class ChatService {
     public SendChatResponse sendChat(User user, String meetingId, @Valid SendChatRequest dto) {
 
         Meeting meeting = meetingRepository.findById(meetingId)
-                .filter(x -> x.getParticipants().contains(user))
+                .stream()
+                .peek(x -> {
+                    if (!x.getParticipants().contains(user))
+                        throw MeetingException.of(MEETING_NOT_JOINED);
+                })
+                .findFirst()
                 .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
         Chat chat = chatRepository.save(
@@ -117,7 +128,12 @@ public class ChatService {
     public void readAllChat(User user, String meetingId) {
 
         Meeting meeting = meetingRepository.findById(meetingId)
-                .filter(x -> x.getParticipants().contains(user))
+                .stream()
+                .peek(x -> {
+                    if (!x.getParticipants().contains(user))
+                        throw MeetingException.of(MEETING_NOT_JOINED);
+                })
+                .findFirst()
                 .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
         chatRepository.findAllByMeeting(meeting).forEach(chatMessage -> {
@@ -129,7 +145,12 @@ public class ChatService {
     public void readChat(User user, String chattingId) {
 
         Chat chat = chatRepository.findById(chattingId)
-                .filter(x -> x.getMeeting().getParticipants().contains(user))
+                .stream()
+                .peek(x -> {
+                    if (!x.getMeeting().getParticipants().contains(user))
+                        throw MeetingException.of(MEETING_NOT_JOINED);
+                })
+                .findFirst()
                 .orElseThrow(() -> ChatException.of(MESSAGE_NOT_FOUND));
 
         chat.getUnread().remove(user);
@@ -140,7 +161,12 @@ public class ChatService {
     public SseEmitter openSseTunnel(User user, String meetingId) {
 
         Meeting meeting = meetingRepository.findById(meetingId)
-                .filter(x -> x.getParticipants().contains(user))
+                .stream()
+                .peek(x -> {
+                    if (!x.getParticipants().contains(user))
+                        throw MeetingException.of(MEETING_NOT_JOINED);
+                })
+                .findFirst()
                 .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
         SseEmitter emitter = new SseEmitter(DEFAULT_SSE_TIMEOUT);

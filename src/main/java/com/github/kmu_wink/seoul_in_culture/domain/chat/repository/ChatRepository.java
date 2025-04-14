@@ -11,9 +11,9 @@ import java.util.Optional;
 @Repository
 public interface ChatRepository extends MongoRepository<Chat, String> {
 
-    List<Chat> findAllByMeeting(Meeting meeting);
-
     Optional<Chat> findLastByMeeting(Meeting meeting);
+
+    List<Chat> findAllByMeeting(Meeting meeting);
 
     void deleteAllByMeeting(Meeting meeting);
 }

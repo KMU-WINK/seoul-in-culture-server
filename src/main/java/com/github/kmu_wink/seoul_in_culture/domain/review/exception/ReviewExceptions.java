@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum ReviewExceptions {
 
     ALREADY_REVIEW("이미 리뷰를 작성한 유저입니다."),
+    TARGET_NOT_PARTICIPANT_MEETING("타겟 유저가 모임에 참가중이지 않습니다.")
     ;
 
     private final String message;

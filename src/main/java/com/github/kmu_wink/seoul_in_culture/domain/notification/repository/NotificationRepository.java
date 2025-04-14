@@ -11,6 +11,5 @@ import java.util.List;
 public interface NotificationRepository extends MongoRepository<Notification, String> {
 
     List<Notification> findAllByUser(User user);
-
     List<Notification> findAllByUserAndUnreadIsTrue(User user);
 }

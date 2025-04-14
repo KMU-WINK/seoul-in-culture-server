@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 import static com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventExceptions.EVENT_NOT_FOUND;
 
@@ -23,8 +22,8 @@ public class BookmarkService {
     private final EventRepository eventRepository;
 
     public GetBookmarkResponse getBookmark(User user) {
-        List<Event> eventList = bookmarkRepository.findByUser(user)
-                .stream()
+
+        List<Event> eventList = bookmarkRepository.findByUser(user).stream()
                 .map(Bookmark::getEvent)
                 .toList();
 
@@ -34,25 +33,25 @@ public class BookmarkService {
     }
 
     public void postBookmark(User user, String eventId) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> EventException.of(EVENT_NOT_FOUND));
 
-        if (bookmarkRepository.existsByUserAndEvent(user, event)) return;
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> EventException.of(EVENT_NOT_FOUND));
 
-        Bookmark bookmark = Bookmark.builder()
-                .user(user)
-                .event(event)
-                .build();
-
-        bookmarkRepository.save(bookmark);
+        bookmarkRepository.findByUserAndEvent(user, event)
+                .orElseGet(() ->
+                        bookmarkRepository.save(
+                                Bookmark.builder()
+                                        .user(user)
+                                        .event(event)
+                                        .build()
+                        )
+                );
     }
 
     public void deleteBookmark(User user, String eventId) {
+
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> EventException.of(EVENT_NOT_FOUND));
 
-        Optional<Bookmark> bookmark = bookmarkRepository.findByUserAndEvent(user, event);
-        if (bookmark.isEmpty()) return;
-        bookmarkRepository.delete(bookmark.get());
+        bookmarkRepository.findByUserAndEvent(user, event).ifPresent(bookmarkRepository::delete);
     }
 }

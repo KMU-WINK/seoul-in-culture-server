@@ -1,20 +1,20 @@
 package com.github.kmu_wink.seoul_in_culture.domain.meeting.service;
 
 import com.github.kmu_wink.seoul_in_culture.domain.chat.repository.ChatRepository;
-import com.github.kmu_wink.seoul_in_culture.domain.review.repository.ReviewRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventException;
+import com.github.kmu_wink.seoul_in_culture.domain.event.repository.EventRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.event.schema.Event;
 import com.github.kmu_wink.seoul_in_culture.domain.meeting.dto.request.CreateMeetingRequest;
 import com.github.kmu_wink.seoul_in_culture.domain.meeting.dto.response.GetMeetingResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.meeting.dto.response.GetMeetingsResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingException;
 import com.github.kmu_wink.seoul_in_culture.domain.meeting.repository.MeetingRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.meeting.schema.Meeting;
-import com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventException;
-import com.github.kmu_wink.seoul_in_culture.domain.event.repository.EventRepository;
-import com.github.kmu_wink.seoul_in_culture.domain.event.schema.Event;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.api.NotificationApi;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingHostDelegateDetail;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingJoinDetail;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingLeaveDetail;
+import com.github.kmu_wink.seoul_in_culture.domain.review.repository.ReviewRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserException;
 import com.github.kmu_wink.seoul_in_culture.domain.user.repository.UserRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
@@ -22,14 +22,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.*;
 import static com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventExceptions.EVENT_NOT_FOUND;
+import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.*;
 import static com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserExceptions.USER_NOT_FOUND;
 
 @Service
@@ -45,8 +43,6 @@ public class MeetingService {
 	private final MongoTemplate mongoTemplate;
 
 	private final NotificationApi notificationApi;
-
-    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public GetMeetingsResponse getMyMeetings(User user, boolean active) {
 
@@ -70,8 +66,7 @@ public class MeetingService {
 
     public GetMeetingResponse getMeeting(String meetingId) {
 
-        Meeting meeting = meetingRepository.findById(meetingId)
-                .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+        Meeting meeting = meetingRepository.findById(meetingId).orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
         return GetMeetingResponse.builder()
                 .meeting(meeting)
@@ -80,15 +75,14 @@ public class MeetingService {
 
     public GetMeetingResponse createMeeting(User user, String eventId, CreateMeetingRequest dto) {
 
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> EventException.of(EVENT_NOT_FOUND));
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> EventException.of(EVENT_NOT_FOUND));
 
         Meeting meeting = meetingRepository.save(
                 Meeting.builder()
                         .event(event)
                         .title(dto.title())
                         .description(dto.description())
-                        .date(LocalDateTime.parse(dto.datetime(), dateTimeFormatter))
+                        .date(dto.datetime())
                         .maxPeople(dto.maxPeople())
                         .minAge(dto.minAge())
                         .maxAge(dto.maxAge())

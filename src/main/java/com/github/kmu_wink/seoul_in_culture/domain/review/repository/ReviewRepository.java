@@ -11,10 +11,8 @@ import java.util.List;
 @Repository
 public interface ReviewRepository extends MongoRepository<Review, String> {
 
-    List<Review> findAllByMeetingAndAuthor(Meeting meeting, User user);
-
     List<Review> findAllByTarget(User user);
-
+    List<Review> findAllByMeetingAndAuthor(Meeting meeting, User user);
     List<Review> findTop2ByTarget(User user);
 
     boolean existsByMeetingAndAuthorAndTarget(Meeting meeting, User author, User target);

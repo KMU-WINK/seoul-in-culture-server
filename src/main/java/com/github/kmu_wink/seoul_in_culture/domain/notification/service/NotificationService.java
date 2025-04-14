@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import static com.github.kmu_wink.seoul_in_culture.domain.notification.exception.NotificationExceptions.NOTIFICATION_NOT_FOUND;
+import static com.github.kmu_wink.seoul_in_culture.domain.notification.exception.NotificationExceptions.OTHER_USER_NOTIFICATION;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +30,12 @@ public class NotificationService {
 
     public void readNotification(User user, String notificationId) {
 
-        Notification notification = notificationRepository.findById(notificationId)
-                .filter(x -> x.getUser().equals(user))
+        Notification notification = notificationRepository.findById(notificationId).stream()
+                .peek(x -> {
+                    if (!x.getUser().equals(user))
+                        throw NotificationException.of(OTHER_USER_NOTIFICATION);
+                })
+                .findFirst()
                 .orElseThrow(() -> NotificationException.of(NOTIFICATION_NOT_FOUND));
 
         notification.setUnread(false);
