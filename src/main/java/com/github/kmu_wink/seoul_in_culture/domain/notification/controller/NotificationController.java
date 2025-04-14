@@ -31,7 +31,7 @@ public class NotificationController {
         return ApiResponse.ok(notificationService.getNotifications(user));
     }
 
-    @PostMapping("/{notificationId}")
+    @PostMapping("/{notificationId}/read")
     @Operation(summary = "알림 읽기")
     public ApiResponse<Void> readNotification(
             @AuthenticationPrincipal User user,
@@ -43,7 +43,7 @@ public class NotificationController {
         return ApiResponse.ok();
     }
 
-    @PostMapping("/all")
+    @PostMapping("/read/all")
     @Operation(summary = "알림 모두 읽기")
     public ApiResponse<Void> readAllNotification(
             @AuthenticationPrincipal User user

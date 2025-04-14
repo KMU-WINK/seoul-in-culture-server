@@ -1,0 +1,238 @@
+package com.github.kmu_wink.seoul_in_culture.domain.meeting.service;
+
+import com.github.kmu_wink.seoul_in_culture.domain.chat.repository.ChatRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.review.repository.ReviewRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.meeting.dto.request.CreateMeetingRequest;
+import com.github.kmu_wink.seoul_in_culture.domain.meeting.dto.response.GetMeetingResponse;
+import com.github.kmu_wink.seoul_in_culture.domain.meeting.dto.response.GetMeetingsResponse;
+import com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingException;
+import com.github.kmu_wink.seoul_in_culture.domain.meeting.repository.MeetingRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.meeting.schema.Meeting;
+import com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventException;
+import com.github.kmu_wink.seoul_in_culture.domain.event.repository.EventRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.event.schema.Event;
+import com.github.kmu_wink.seoul_in_culture.domain.notification.api.NotificationApi;
+import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingHostDelegateDetail;
+import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingJoinDetail;
+import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingLeaveDetail;
+import com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserException;
+import com.github.kmu_wink.seoul_in_culture.domain.user.repository.UserRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.*;
+import static com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventExceptions.EVENT_NOT_FOUND;
+import static com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserExceptions.USER_NOT_FOUND;
+
+@Service
+@RequiredArgsConstructor
+public class MeetingService {
+
+    private final UserRepository userRepository;
+    private final EventRepository eventRepository;
+    private final MeetingRepository meetingRepository;
+    private final ChatRepository chatRepository;
+    private final ReviewRepository reviewRepository;
+
+	private final MongoTemplate mongoTemplate;
+
+	private final NotificationApi notificationApi;
+
+    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+    public GetMeetingsResponse getMyMeetings(User user, boolean active) {
+
+        List<Meeting> meetings = meetingRepository.findAllByParticipantsContainingAndEnd(user, active);
+
+        return GetMeetingsResponse.builder()
+                .meetings(meetings)
+                .build();
+    }
+
+	public GetMeetingsResponse getMeetings(String eventId, Integer minAge, Integer maxAge, User.Gender gender) {
+
+		Event event = eventRepository.findById(eventId).orElseThrow(() -> EventException.of(EVENT_NOT_FOUND));
+
+        List<Meeting> meetings = meetingRepository.findFilteredMeetings(mongoTemplate, event, minAge, maxAge, gender);
+
+		return GetMeetingsResponse.builder()
+				.meetings(meetings)
+				.build();
+	}
+
+    public GetMeetingResponse getMeeting(String meetingId) {
+
+        Meeting meeting = meetingRepository.findById(meetingId)
+                .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+
+        return GetMeetingResponse.builder()
+                .meeting(meeting)
+                .build();
+    }
+
+    public GetMeetingResponse createMeeting(User user, String eventId, CreateMeetingRequest dto) {
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> EventException.of(EVENT_NOT_FOUND));
+
+        Meeting meeting = meetingRepository.save(
+                Meeting.builder()
+                        .event(event)
+                        .title(dto.title())
+                        .description(dto.description())
+                        .date(LocalDateTime.parse(dto.datetime(), dateTimeFormatter))
+                        .maxPeople(dto.maxPeople())
+                        .minAge(dto.minAge())
+                        .maxAge(dto.maxAge())
+                        .gender(dto.gender())
+                        .host(user)
+                        .participants(Set.of(user))
+                        .end(false)
+                        .build()
+        );
+
+        return GetMeetingResponse.builder()
+                .meeting(meeting)
+                .build();
+    }
+
+    public void joinMeeting(User user, String meetingId) {
+
+        Meeting meeting = meetingRepository.findById(meetingId)
+                .stream()
+                .peek(x -> {
+                    if (x.getParticipants().contains(user)) throw MeetingException.of(MEETING_ALREADY_JOINED);
+                })
+                .peek(x -> {
+                    if (x.getParticipants().size() + 1 > x.getMaxPeople()) throw MeetingException.of(MEETING_FULL);
+                })
+                .peek(x -> {
+                    if (Objects.nonNull(x.getMaxAge()) && user.getAge() > x.getMaxAge())
+                        throw MeetingException.of(MEETING_NOT_SATISFIED);
+                })
+                .peek(x -> {
+                    if (Objects.nonNull(x.getMinAge()) && user.getAge() < x.getMinAge())
+                        throw MeetingException.of(MEETING_NOT_SATISFIED);
+                })
+                .peek(x -> {
+                    if (Objects.nonNull(x.getGender()) && !user.getGender().equals(x.getGender()))
+                        throw MeetingException.of(MEETING_NOT_SATISFIED);
+                })
+                .peek(x -> {
+                    if (x.isEnd()) throw MeetingException.of(MEETING_ENDED);
+                })
+                .findFirst()
+                .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+
+        meeting.getParticipants().add(user);
+
+		meeting.getParticipants().forEach(participant -> {
+			if (participant.equals(user)) return;
+
+			notificationApi.sendNotification(
+					participant,
+					MeetingJoinDetail.builder()
+							.meeting(meeting)
+							.user(user)
+							.build()
+			);
+		});
+
+        meetingRepository.save(meeting);
+    }
+
+    public void leaveMeeting(User user, String meetingId) {
+
+        Meeting meeting = meetingRepository.findById(meetingId)
+                .stream()
+                .peek(x -> {
+                    if (!x.getParticipants().contains(user)) throw MeetingException.of(MEETING_NOT_JOINED);
+                })
+                .peek(x -> {
+                    if (x.getHost().equals(user)) throw MeetingException.of(MEETING_HOST_CANNOT_LEAVE);
+                })
+                .findFirst()
+                .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+
+        meeting.getParticipants().remove(user);
+
+		meeting.getParticipants().forEach(participant ->
+				notificationApi.sendNotification(
+						participant,
+						MeetingLeaveDetail.builder()
+								.meeting(meeting)
+								.user(user)
+								.build()
+				)
+		);
+
+        meetingRepository.save(meeting);
+    }
+
+    public GetMeetingResponse finishMeeting(User user, String meetingId) {
+
+        Meeting meeting = meetingRepository.findById(meetingId)
+                .filter(x -> x.getParticipants().contains(user))
+                .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+
+        if (!meeting.getHost().equals(user)) throw MeetingException.of(MEETING_NOT_OWNER);
+
+        meeting.setEnd(true);
+
+        meeting = meetingRepository.save(meeting);
+
+        return GetMeetingResponse.builder()
+                .meeting(meeting)
+                .build();
+    }
+
+    public GetMeetingResponse delegateHost(User user, String meetingId, String targetId) {
+
+        Meeting meeting = meetingRepository.findById(meetingId)
+                .filter(x -> x.getParticipants().contains(user))
+                .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+
+        if (!meeting.getHost().equals(user)) throw MeetingException.of(MEETING_NOT_OWNER);
+
+        User target = userRepository.findById(targetId).orElseThrow(() -> UserException.of(USER_NOT_FOUND));
+        if (!meeting.getParticipants().contains(target)) throw MeetingException.of(MEETING_NOT_JOINED);
+
+        meeting.setHost(target);
+
+        meeting = meetingRepository.save(meeting);
+
+		Meeting finalMeeting = meeting;
+		meeting.getParticipants().forEach(participant ->
+				notificationApi.sendNotification(
+						participant,
+						MeetingHostDelegateDetail.builder()
+								.meeting(finalMeeting)
+								.build()
+				));
+
+        return GetMeetingResponse.builder()
+                .meeting(meeting)
+                .build();
+    }
+
+    public void deleteMeeting(User user, String meetingId) {
+
+        Meeting meeting = meetingRepository.findById(meetingId)
+                .filter(x -> x.getParticipants().contains(user))
+                .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+
+        if (!meeting.getHost().equals(user)) throw MeetingException.of(MEETING_NOT_OWNER);
+
+        chatRepository.deleteAllByMeeting(meeting);
+        reviewRepository.deleteAllByMeeting(meeting);
+        meetingRepository.delete(meeting);
+    }
+}

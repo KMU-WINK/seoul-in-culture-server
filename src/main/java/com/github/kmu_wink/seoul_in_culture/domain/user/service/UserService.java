@@ -1,8 +1,8 @@
 package com.github.kmu_wink.seoul_in_culture.domain.user.service;
 
-import com.github.kmu_wink.seoul_in_culture.domain.event.$bookmark.repository.BookmarkRepository;
-import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.$review.repository.ReviewRepository;
-import com.github.kmu_wink.seoul_in_culture.domain.event.$meeting.repository.MeetingRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.bookmark.repository.BookmarkRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.review.repository.ReviewRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.meeting.repository.MeetingRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.user.dto.request.UserEditRequest;
 import com.github.kmu_wink.seoul_in_culture.domain.user.dto.response.GetMyInfoResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.user.dto.response.GetOtherInfoResponse;
