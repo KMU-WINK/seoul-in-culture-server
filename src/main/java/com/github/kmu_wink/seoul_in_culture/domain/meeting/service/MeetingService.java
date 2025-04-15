@@ -174,10 +174,15 @@ public class MeetingService {
     public GetMeetingResponse finishMeeting(User user, String meetingId) {
 
         Meeting meeting = meetingRepository.findById(meetingId)
-                .filter(x -> x.getParticipants().contains(user))
+                .stream()
+                .peek(x -> {
+                    if (!x.getParticipants().contains(user)) throw MeetingException.of(MEETING_NOT_JOINED);
+                })
+                .peek(x -> {
+                    if (x.getHost().equals(user)) throw MeetingException.of(MEETING_HOST_CANNOT_LEAVE);
+                })
+                .findFirst()
                 .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
-
-        if (!meeting.getHost().equals(user)) throw MeetingException.of(MEETING_NOT_OWNER);
 
         meeting.setEnd(true);
 
@@ -191,10 +196,15 @@ public class MeetingService {
     public GetMeetingResponse delegateHost(User user, String meetingId, String targetId) {
 
         Meeting meeting = meetingRepository.findById(meetingId)
-                .filter(x -> x.getParticipants().contains(user))
+                .stream()
+                .peek(x -> {
+                    if (!x.getParticipants().contains(user)) throw MeetingException.of(MEETING_NOT_JOINED);
+                })
+                .peek(x -> {
+                    if (x.getHost().equals(user)) throw MeetingException.of(MEETING_HOST_CANNOT_LEAVE);
+                })
+                .findFirst()
                 .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
-
-        if (!meeting.getHost().equals(user)) throw MeetingException.of(MEETING_NOT_OWNER);
 
         User target = userRepository.findById(targetId).orElseThrow(() -> UserException.of(USER_NOT_FOUND));
         if (!meeting.getParticipants().contains(target)) throw MeetingException.of(MEETING_NOT_JOINED);
@@ -220,10 +230,15 @@ public class MeetingService {
     public void deleteMeeting(User user, String meetingId) {
 
         Meeting meeting = meetingRepository.findById(meetingId)
-                .filter(x -> x.getParticipants().contains(user))
+                .stream()
+                .peek(x -> {
+                    if (!x.getParticipants().contains(user)) throw MeetingException.of(MEETING_NOT_JOINED);
+                })
+                .peek(x -> {
+                    if (x.getHost().equals(user)) throw MeetingException.of(MEETING_HOST_CANNOT_LEAVE);
+                })
+                .findFirst()
                 .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
-
-        if (!meeting.getHost().equals(user)) throw MeetingException.of(MEETING_NOT_OWNER);
 
         chatRepository.deleteAllByMeeting(meeting);
         reviewRepository.deleteAllByMeeting(meeting);
