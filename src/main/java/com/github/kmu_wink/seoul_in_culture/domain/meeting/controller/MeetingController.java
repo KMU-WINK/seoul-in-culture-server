@@ -92,6 +92,7 @@ public class MeetingController {
         return ApiResponse.ok();
     }
 
+    @AuthGuard
     @PatchMapping("/{meetingId}/finish")
     @Operation(summary = "[모임장] 모임 완료하기")
     public ApiResponse<GetMeetingResponse> finishMeeting(
@@ -102,6 +103,7 @@ public class MeetingController {
         return ApiResponse.ok(meetingService.finishMeeting(user, meetingId));
     }
 
+    @AuthGuard
     @PatchMapping("/{meetingId}/delegate/{targetId}")
     @Operation(summary = "[모임장] 모임장 위임하기")
     public ApiResponse<GetMeetingResponse> delegateHost(
@@ -113,6 +115,7 @@ public class MeetingController {
         return ApiResponse.ok(meetingService.delegateHost(user, meetingId, targetId));
     }
 
+    @AuthGuard
     @DeleteMapping("/{meetingId}")
     @Operation(summary = "[모임장] 모임 삭제하기")
     public ApiResponse<Void> deleteMeeting(
