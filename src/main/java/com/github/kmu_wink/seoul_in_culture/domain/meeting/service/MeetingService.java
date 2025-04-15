@@ -46,7 +46,7 @@ public class MeetingService {
 
     public GetMeetingsResponse getMyMeetings(User user, boolean active) {
 
-        List<Meeting> meetings = meetingRepository.findAllByParticipantsContainingAndEnd(user, active);
+        List<Meeting> meetings = meetingRepository.findAllByParticipantsContainingAndEnd(user, !active);
 
         return GetMeetingsResponse.builder()
                 .meetings(meetings)
