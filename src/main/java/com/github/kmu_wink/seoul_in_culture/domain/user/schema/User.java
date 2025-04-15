@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Data
 @Builder
@@ -24,13 +25,16 @@ public class User extends BaseSchema {
 
     int experience;
 
-    int birthYear;
+    Integer birthYear;
     District district;
     Gender gender;
 
     boolean meetingOpen;
 
-    public int getAge() {
+    public Integer getAge() {
+
+        if (Objects.isNull(birthYear)) return null;
+
         return LocalDate.now().getYear() - birthYear + 1;
     }
 
