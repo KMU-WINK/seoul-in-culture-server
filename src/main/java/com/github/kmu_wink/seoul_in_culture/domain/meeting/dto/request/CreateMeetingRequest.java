@@ -20,7 +20,7 @@ public record CreateMeetingRequest(
         @NotNull
         LocalDateTime datetime,
 
-        @Min(1)
+        @Min(2)
         int maxPeople,
 
         @Min(15)

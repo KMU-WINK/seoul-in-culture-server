@@ -153,6 +153,9 @@ public class MeetingService {
                 .peek(x -> {
                     if (x.getHost().equals(user)) throw MeetingException.of(MEETING_HOST_CANNOT_LEAVE);
                 })
+                .peek(x -> {
+                    if (x.isEnd()) throw MeetingException.of(MEETING_ENDED);
+                })
                 .findFirst()
                 .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
