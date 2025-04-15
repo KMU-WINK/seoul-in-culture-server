@@ -5,6 +5,7 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
@@ -16,7 +17,7 @@ public record CreateMeetingRequest(
         @NotBlank
         String description,
 
-        @NotBlank
+        @NotNull
         LocalDateTime datetime,
 
         @Min(1)
