@@ -30,26 +30,19 @@ public class AuthService {
         KakaoUser kakaoUser = kakaoApi.getKakaoUser(dto.token())
                 .orElseThrow(() -> AuthException.of(INVALID_KAKAO_TOKEN));
 
-        User user = userRepository.save(
-                userRepository.findByKakao(kakaoUser.id()).orElseGet(() ->
-                        User.builder()
-                                .kakao(kakaoUser.id())
-                                .nickname(generateRandomNickname())
-                                .email(kakaoUser.email())
-                                .experience(0)
-                                .meetingOpen(true)
-                                .build()));
+        User user = userRepository.save(userRepository.findByKakao(kakaoUser.id())
+                .orElseGet(() -> User.builder()
+                        .kakao(kakaoUser.id())
+                        .nickname(generateRandomNickname())
+                        .email(kakaoUser.email())
+                        .build()));
 
-        return LoginResponse.builder()
-                .token(jwtUtil.generateToken(user))
-                .build();
+        return LoginResponse.builder().token(jwtUtil.generateToken(user)).build();
     }
 
     public GetMyTokenInfoResponse getMyTokenInfo(User user) {
 
-        return GetMyTokenInfoResponse.builder()
-                .user(user)
-                .build();
+        return GetMyTokenInfoResponse.builder().user(user).build();
     }
 
     private String generateRandomNickname() {
@@ -57,6 +50,7 @@ public class AuthService {
         String nickname;
 
         do {
+
             nickname = UUID.randomUUID().toString().split("-")[0];
         } while (userRepository.existsByNickname(nickname));
 

@@ -10,4 +10,5 @@ public record GetNotificationsResponse(
 
         Collection<Notification> notifications
 ) {
+
 }

@@ -36,4 +36,5 @@ public record CreateMeetingRequest(
         @Nullable
         User.Gender gender
 ) {
+
 }

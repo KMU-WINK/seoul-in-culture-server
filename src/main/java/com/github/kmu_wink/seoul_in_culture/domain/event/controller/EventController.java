@@ -26,7 +26,7 @@ public class EventController {
 
     @GetMapping
     @Operation(summary = "행사 목록")
-    public ApiResponse<EventsResponse> getMyMeetings(
+    public ApiResponse<EventsResponse> getEvents(
             @RequestParam(required = false) LocalDate date,
             @RequestParam(required = false) List<Event.Category> categories,
             @RequestParam(required = false) List<User.District> districts,

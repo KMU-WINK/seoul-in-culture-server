@@ -33,19 +33,12 @@ public class JwtUtil {
 
     public String generateToken(String userId) {
 
-        return JWT.create()
-                .withIssuedAt(Instant.now())
-                .withClaim("id", userId)
-                .sign(algorithm);
+        return JWT.create().withIssuedAt(Instant.now()).withClaim("id", userId).sign(algorithm);
     }
 
     public String extractToken(String token) {
 
-        return JWT.require(algorithm)
-                .build()
-                .verify(token)
-                .getClaim("id")
-                .asString();
+        return JWT.require(algorithm).build().verify(token).getClaim("id").asString();
     }
 
     public boolean validateToken(String token) throws TokenExpiredException {

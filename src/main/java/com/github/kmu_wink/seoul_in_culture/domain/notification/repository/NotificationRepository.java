@@ -10,6 +10,6 @@ import java.util.List;
 @Repository
 public interface NotificationRepository extends MongoRepository<Notification, String> {
 
-    List<Notification> findAllByUser(User user);
+    List<Notification> findAllByUserOrderByIdDesc(User user);
     List<Notification> findAllByUserAndUnreadIsTrue(User user);
 }

@@ -17,3 +17,11 @@ app:
     redirect-url: ${KAKAO_CALLBACK_URL}
   seoul-data:
     key: ${SEOUL_DATA_API_KEY}
+  cloud:
+    aws:
+      region: ${AWS_REGION}
+      s3:
+        bucket: ${AWS_S3_BUCKET}
+      credential:
+        accessKey: ${AWS_ACCESS_KEY}
+        secretKey: ${AWS_SECRET_KEY}

@@ -23,13 +23,9 @@ public class BookmarkService {
 
     public GetBookmarkResponse getBookmark(User user) {
 
-        List<Event> eventList = bookmarkRepository.findByUser(user).stream()
-                .map(Bookmark::getEvent)
-                .toList();
+        List<Event> eventList = bookmarkRepository.findByUser(user).stream().map(Bookmark::getEvent).toList();
 
-        return GetBookmarkResponse.builder()
-                .bookmark(eventList)
-                .build();
+        return GetBookmarkResponse.builder().bookmark(eventList).build();
     }
 
     public void postBookmark(User user, String eventId) {
@@ -37,20 +33,12 @@ public class BookmarkService {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> EventException.of(EVENT_NOT_FOUND));
 
         bookmarkRepository.findByUserAndEvent(user, event)
-                .orElseGet(() ->
-                        bookmarkRepository.save(
-                                Bookmark.builder()
-                                        .user(user)
-                                        .event(event)
-                                        .build()
-                        )
-                );
+                .orElseGet(() -> bookmarkRepository.save(Bookmark.builder().user(user).event(event).build()));
     }
 
     public void deleteBookmark(User user, String eventId) {
 
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> EventException.of(EVENT_NOT_FOUND));
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> EventException.of(EVENT_NOT_FOUND));
 
         bookmarkRepository.findByUserAndEvent(user, event).ifPresent(bookmarkRepository::delete);
     }

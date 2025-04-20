@@ -1,7 +1,7 @@
 package com.github.kmu_wink.seoul_in_culture.domain.user.dto.response;
 
-import com.github.kmu_wink.seoul_in_culture.domain.review.schema.Review;
 import com.github.kmu_wink.seoul_in_culture.domain.meeting.schema.Meeting;
+import com.github.kmu_wink.seoul_in_culture.domain.review.schema.Review;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 import lombok.Builder;
 
@@ -12,11 +12,14 @@ public record GetOtherInfoResponse(
 
         User user,
 
-        int bookmark,
+        int bookmarks,
 
-        int joinedMeeting,
-        Collection<Meeting> hostedMeeting,
+        int joinedMeetings,
+        Collection<Meeting> hostedMeetings,
 
-        Collection<Review> review
+        Collection<Review> reviews,
+
+        double score
 ) {
+
 }

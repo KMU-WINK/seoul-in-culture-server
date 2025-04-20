@@ -35,12 +35,16 @@ public class KakaoApi {
                     .getBody()
                     .getObject();
 
-            if (response.has("error_code")) throw AuthException.of(AuthExceptions.INVALID_KAKAO_TOKEN);
+            if (response.has("error_code")) {
+                throw AuthException.of(AuthExceptions.INVALID_KAKAO_TOKEN);
+            }
 
             accessToken = Optional.ofNullable(response.getString("access_token"));
         }
 
-        if (accessToken.isEmpty()) return Optional.empty();
+        if (accessToken.isEmpty()) {
+            return Optional.empty();
+        }
 
         try (UnirestInstance instance = Unirest.spawnInstance()) {
 
@@ -50,11 +54,10 @@ public class KakaoApi {
                     .getBody()
                     .getObject();
 
-            return Optional.of(
-                    KakaoUser.builder()
-                            .id(response.getLong("id"))
-                            .email(response.getJSONObject("kakao_account").getString("email"))
-                            .build());
+            return Optional.of(KakaoUser.builder()
+                    .id(response.getLong("id"))
+                    .email(response.getJSONObject("kakao_account").getString("email"))
+                    .build());
         }
     }
 }

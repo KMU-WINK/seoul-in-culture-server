@@ -13,7 +13,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @AuthGuard
@@ -57,10 +62,7 @@ public class ChatController {
 
     @PostMapping("/{meetingId}/read/all")
     @Operation(summary = "채팅 모두 읽음")
-    public ApiResponse<Void> readAllChat(
-            @AuthenticationPrincipal User user,
-            @PathVariable String meetingId
-    ) {
+    public ApiResponse<Void> readAllChat(@AuthenticationPrincipal User user, @PathVariable String meetingId) {
 
         chatService.readAllChat(user, meetingId);
 
@@ -69,10 +71,7 @@ public class ChatController {
 
     @PostMapping("/{chattingId}/read")
     @Operation(summary = "채팅 읽음")
-    public ApiResponse<Void> readChat(
-            @AuthenticationPrincipal User user,
-            @PathVariable String chattingId
-    ) {
+    public ApiResponse<Void> readChat(@AuthenticationPrincipal User user, @PathVariable String chattingId) {
 
         chatService.readChat(user, chattingId);
 
@@ -81,10 +80,7 @@ public class ChatController {
 
     @GetMapping("/{meetingId}/sse")
     @Operation(summary = "SSE 터널 열기")
-    public SseEmitter openSseTunnel(
-            @AuthenticationPrincipal User user,
-            @PathVariable String meetingId
-    ) {
+    public SseEmitter openSseTunnel(@AuthenticationPrincipal User user, @PathVariable String meetingId) {
 
         return chatService.openSseTunnel(user, meetingId);
     }

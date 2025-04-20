@@ -24,33 +24,30 @@ public class NotificationApi {
 
         Notification.Type type = Notification.Type.fromDetail(detail);
 
-        Notification notification = notificationRepository.save(
-                Notification.builder()
-                        .user(user)
-                        .type(type)
-                        .detail(detail)
-                        .url(Notification.createUrl(type, detail))
-                        .unread(true)
-                        .build()
-        );
+        Notification notification = notificationRepository.save(Notification.builder()
+                .user(user)
+                .type(type)
+                .detail(detail)
+                .url(Notification.createUrl(type, detail))
+                .unread(true)
+                .build());
 
-        fcmTokenRepository.findByUser(user)
-                .map(FcmToken::getToken)
-                .ifPresent(token -> {
-                    Message message = Message.builder()
-                            .setToken(token)
-                            .putData("title", notification.getTitle())
-                            .putData("body", notification.getBody())
-                            .putData("url", notification.getUrl())
-                            .build();
+        fcmTokenRepository.findByUser(user).map(FcmToken::getToken).ifPresent(token -> {
+            Message message = Message.builder()
+                    .setToken(token)
+                    .putData("title", notification.getTitle())
+                    .putData("body", notification.getBody())
+                    .putData("url", notification.getUrl())
+                    .build();
 
-                    try {
-                        FirebaseMessaging.getInstance().send(message);
-                    } catch (FirebaseMessagingException e) {
-                        if (!e.getMessagingErrorCode().equals(MessagingErrorCode.UNREGISTERED))
-                            throw new RuntimeException(e);
-                        fcmTokenRepository.deleteByToken(token);
-                    }
-                });
+            try {
+                FirebaseMessaging.getInstance().send(message);
+            } catch (FirebaseMessagingException e) {
+                if (!e.getMessagingErrorCode().equals(MessagingErrorCode.UNREGISTERED)) {
+                    throw new RuntimeException(e);
+                }
+                fcmTokenRepository.deleteByToken(token);
+            }
+        });
     }
 }

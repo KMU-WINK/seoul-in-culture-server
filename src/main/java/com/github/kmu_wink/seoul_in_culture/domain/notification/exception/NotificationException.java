@@ -5,7 +5,8 @@ import com.github.kmu_wink.seoul_in_culture.common.api.ApiException;
 public class NotificationException extends ApiException {
 
     private NotificationException(
-            NotificationExceptions notificationExceptions) {
+            NotificationExceptions notificationExceptions
+    ) {
 
         super(notificationExceptions.getMessage());
     }

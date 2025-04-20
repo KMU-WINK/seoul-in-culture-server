@@ -64,9 +64,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String authorization = request.getHeader("Authorization");
 
-        return (authorization != null && authorization.startsWith("Bearer "))
-                ? authorization.substring(7)
-                : null;
+        return (authorization != null && authorization.startsWith("Bearer ")) ? authorization.substring(7) : null;
     }
 
     private void handleException(HttpServletResponse response, ApiException e) throws IOException {

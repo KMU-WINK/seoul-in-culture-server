@@ -8,4 +8,5 @@ public record UpdateMyInfoResponse(
 
         User user
 ) {
+
 }

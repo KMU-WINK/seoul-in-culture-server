@@ -18,5 +18,6 @@ public record RoomListResponse(
             Meeting meeting,
             Chat last
     ) {
+
     }
 }

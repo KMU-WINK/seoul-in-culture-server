@@ -12,4 +12,5 @@ public record ChatInfoResponse(
         Collection<User> participants,
         Collection<Chat> messages
 ) {
+
 }

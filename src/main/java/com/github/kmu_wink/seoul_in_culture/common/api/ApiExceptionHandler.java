@@ -14,13 +14,13 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
-    @ExceptionHandler({NoResourceFoundException.class, HttpRequestMethodNotSupportedException.class})
+    @ExceptionHandler({ NoResourceFoundException.class, HttpRequestMethodNotSupportedException.class })
     public ApiResponse<?> noResourceFoundException(Exception ignored) {
 
         return ApiResponse.error("요청하신 리소스를 찾을 수 없습니다.");
     }
 
-    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
+    @ExceptionHandler({ HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class })
     public ApiResponse<?> httpMessageNotReadableException(Exception ignored) {
 
         return ApiResponse.error("요청 데이터가 올바르지 않습니다.");

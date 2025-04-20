@@ -9,7 +9,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @AuthGuard
 @RestController
@@ -25,15 +30,14 @@ public class BookmarkController {
     public ApiResponse<GetBookmarkResponse> getBookmark(
             @AuthenticationPrincipal User user
     ) {
+
         return ApiResponse.ok(bookmarkService.getBookmark(user));
     }
 
     @PostMapping("/{eventId}")
     @Operation(summary = "북마크 추가")
-    public ApiResponse<Void> postBookmark(
-            @AuthenticationPrincipal User user,
-            @PathVariable String eventId
-    ) {
+    public ApiResponse<Void> postBookmark(@AuthenticationPrincipal User user, @PathVariable String eventId) {
+
         bookmarkService.postBookmark(user, eventId);
 
         return ApiResponse.ok();
@@ -41,10 +45,8 @@ public class BookmarkController {
 
     @DeleteMapping("/{eventId}")
     @Operation(summary = "북마크 삭제")
-    public ApiResponse<Void> deleteBookmark(
-            @AuthenticationPrincipal User user,
-            @PathVariable String eventId
-    ) {
+    public ApiResponse<Void> deleteBookmark(@AuthenticationPrincipal User user, @PathVariable String eventId) {
+
         bookmarkService.deleteBookmark(user, eventId);
 
         return ApiResponse.ok();

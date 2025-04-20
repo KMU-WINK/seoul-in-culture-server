@@ -8,4 +8,5 @@ public record LoginRequest(
         String token
 
 ) {
+
 }

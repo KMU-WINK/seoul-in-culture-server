@@ -1,5 +1,6 @@
 package com.github.kmu_wink.seoul_in_culture.domain.event.schema;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.kmu_wink.seoul_in_culture.common.mongo.BaseSchema;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 import jakarta.annotation.Nonnull;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 @EqualsAndHashCode(callSuper = true)
 public class Event extends BaseSchema {
 
+    @JsonIgnore
     int dataId;
 
     @Nonnull
@@ -69,6 +71,7 @@ public class Event extends BaseSchema {
     @Nullable
     String other;
 
+    @SuppressWarnings("NonAsciiCharacters")
     public enum Category {
 
         교육체험,

@@ -10,4 +10,5 @@ public record GetReviewsResponse(
 
         Collection<Review> reviews
 ) {
+
 }

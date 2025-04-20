@@ -23,25 +23,25 @@ public class User extends BaseSchema {
     String nickname;
     String email;
 
-    int experience;
-
     Integer birthYear;
     District district;
     Gender gender;
 
-    boolean meetingOpen;
-
     public Integer getAge() {
 
-        if (Objects.isNull(birthYear)) return null;
+        if (Objects.isNull(birthYear)) {
+            return null;
+        }
 
         return LocalDate.now().getYear() - birthYear + 1;
     }
 
     public enum Gender {
-        MALE, FEMALE
+        MALE,
+        FEMALE
     }
 
+    @SuppressWarnings("NonAsciiCharacters")
     public enum District {
         종로구,
         중구,

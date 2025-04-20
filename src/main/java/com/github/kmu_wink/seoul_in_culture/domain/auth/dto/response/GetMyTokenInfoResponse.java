@@ -8,4 +8,5 @@ public record GetMyTokenInfoResponse(
 
         User user
 ) {
+
 }

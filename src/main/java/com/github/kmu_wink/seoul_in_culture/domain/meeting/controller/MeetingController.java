@@ -12,7 +12,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/meeting")
@@ -69,27 +77,23 @@ public class MeetingController {
     @AuthGuard
     @PostMapping("/{meetingId}/join")
     @Operation(summary = "모임 참가")
-    public ApiResponse<Void> joinMeeting(
+    public ApiResponse<GetMeetingResponse> joinMeeting(
             @AuthenticationPrincipal User user,
             @PathVariable String meetingId
     ) {
 
-        meetingService.joinMeeting(user, meetingId);
-
-        return ApiResponse.ok();
+        return ApiResponse.ok(meetingService.joinMeeting(user, meetingId));
     }
 
     @AuthGuard
     @PostMapping("/{meetingId}/leave")
     @Operation(summary = "모임 나가기")
-    public ApiResponse<Void> leaveMeeting(
+    public ApiResponse<GetMeetingResponse> leaveMeeting(
             @AuthenticationPrincipal User user,
             @PathVariable String meetingId
     ) {
 
-        meetingService.leaveMeeting(user, meetingId);
-
-        return ApiResponse.ok();
+        return ApiResponse.ok(meetingService.leaveMeeting(user, meetingId));
     }
 
     @AuthGuard
@@ -118,10 +122,7 @@ public class MeetingController {
     @AuthGuard
     @DeleteMapping("/{meetingId}")
     @Operation(summary = "[모임장] 모임 삭제하기")
-    public ApiResponse<Void> deleteMeeting(
-            @AuthenticationPrincipal User user,
-            @PathVariable String meetingId
-    ) {
+    public ApiResponse<Void> deleteMeeting(@AuthenticationPrincipal User user, @PathVariable String meetingId) {
 
         meetingService.deleteMeeting(user, meetingId);
 

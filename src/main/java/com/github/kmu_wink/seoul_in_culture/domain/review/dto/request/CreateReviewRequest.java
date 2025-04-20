@@ -13,4 +13,5 @@ public record CreateReviewRequest(
         @Nullable
         String content
 ) {
+
 }

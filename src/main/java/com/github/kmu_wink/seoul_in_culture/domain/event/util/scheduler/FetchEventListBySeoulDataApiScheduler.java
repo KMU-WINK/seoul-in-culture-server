@@ -40,31 +40,36 @@ public class FetchEventListBySeoulDataApiScheduler {
     @Scheduled(cron = "0 0 * * * *")
     public void fetch() {
 
-        Set<Integer> existingData = eventRepository.findAll().stream()
+        Set<Integer> existingData = eventRepository.findAll()
+                .stream()
                 .map(Event::getDataId)
                 .collect(Collectors.toUnmodifiableSet());
 
         int totalPage = getTotalPage();
 
-        List<Event> saved = eventRepository.saveAll(
-                IntStream.iterate(1, i -> i <= totalPage, i -> i + 1000)
-                        .mapToObj(i -> fetchPage(i, totalPage))
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .flatMap(this::flattenPage)
-                        .map(object -> transferEvent(object, existingData))
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .toList()
-        );
+        List<Event> saved = eventRepository.saveAll(IntStream.iterate(1, i -> i <= totalPage, i -> i + 1000)
+                .mapToObj(i -> fetchPage(i, totalPage))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .flatMap(this::flattenPage)
+                .map(object -> transferEvent(object, existingData))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList());
 
-        if (saved.isEmpty()) return;
+        if (saved.isEmpty()) {
+            return;
+        }
         log.info("{}개의 이벤트가 추가되었습니다.", saved.size());
     }
 
     private String generateUrl(int start, int end) {
 
-        return "http://openapi.seoul.go.kr:8088/%s/json/culturalEventInfo/%d/%d/".formatted(seoulDataProperty.getKey(), start, end);
+        return "http://openapi.seoul.go.kr:8088/%s/json/culturalEventInfo/%d/%d/".formatted(
+                seoulDataProperty.getKey(),
+                start,
+                end
+        );
     }
 
     private int getTotalPage() {
@@ -84,14 +89,12 @@ public class FetchEventListBySeoulDataApiScheduler {
 
         try (UnirestInstance instance = Unirest.spawnInstance()) {
 
-            return Optional.ofNullable(
-                    instance.get(generateUrl(start, Math.min(start + 999, end)))
-                            .asJson()
-                            .getBody()
-                            .getObject()
-                            .getJSONObject("culturalEventInfo")
-                            .getJSONArray("row")
-            );
+            return Optional.ofNullable(instance.get(generateUrl(start, Math.min(start + 999, end)))
+                    .asJson()
+                    .getBody()
+                    .getObject()
+                    .getJSONObject("culturalEventInfo")
+                    .getJSONArray("row"));
         } catch (Exception e) {
 
             log.error("", e);
@@ -113,8 +116,7 @@ public class FetchEventListBySeoulDataApiScheduler {
 
     private Optional<Event> transferEvent(JSONObject object, Set<Integer> existingData) {
 
-        return extractDataId(object)
-                .filter(dataId -> !existingData.contains(dataId))
+        return extractDataId(object).filter(dataId -> !existingData.contains(dataId))
                 .map(dataId -> Event.builder()
                         .dataId(dataId)
                         .category(Event.Category.valueOf(object.getString("CODENAME").replaceAll("[/-]", "")))
@@ -124,7 +126,9 @@ public class FetchEventListBySeoulDataApiScheduler {
                         .endDate(LocalDate.parse(object.getString("END_DATE").split(" ")[0]))
                         .applicationDate(LocalDate.parse(object.getString("RGSTDATE")))
                         .host(object.getString("ORG_NAME"))
-                        .district(object.getString("GUNAME").isBlank() ? null : User.District.valueOf(object.getString("GUNAME")))
+                        .district(object.getString("GUNAME").isBlank()
+                                ? null
+                                : User.District.valueOf(object.getString("GUNAME")))
                         .location(object.getString("PLACE"))
                         .latitude(Double.parseDouble(object.getString("LOT")))
                         .longitude(Double.parseDouble(object.getString("LAT")))
@@ -135,17 +139,20 @@ public class FetchEventListBySeoulDataApiScheduler {
                         .cast(object.getString("PLAYER").isBlank() ? null : object.getString("PLAYER"))
                         .description(object.getString("PROGRAM").isBlank() ? null : object.getString("PROGRAM"))
                         .other(object.getString("ETC_DESC").isBlank() ? null : object.getString("ETC_DESC"))
-                        .build()
-                );
+                        .build());
     }
 
     private Optional<Integer> extractDataId(JSONObject object) {
 
-        if (!object.has("HMPG_ADDR")) return Optional.empty();
+        if (!object.has("HMPG_ADDR")) {
+            return Optional.empty();
+        }
 
         Matcher matcher = Pattern.compile("cultcode=(\\d+)").matcher(object.getString("HMPG_ADDR"));
 
-        if (!matcher.find()) return Optional.empty();
+        if (!matcher.find()) {
+            return Optional.empty();
+        }
 
         return Optional.of(Integer.parseInt(matcher.group(1)));
     }

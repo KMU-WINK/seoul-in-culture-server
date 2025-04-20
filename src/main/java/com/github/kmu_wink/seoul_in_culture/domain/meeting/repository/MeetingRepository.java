@@ -1,7 +1,7 @@
 package com.github.kmu_wink.seoul_in_culture.domain.meeting.repository;
 
-import com.github.kmu_wink.seoul_in_culture.domain.meeting.schema.Meeting;
 import com.github.kmu_wink.seoul_in_culture.domain.event.schema.Event;
+import com.github.kmu_wink.seoul_in_culture.domain.meeting.schema.Meeting;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -15,12 +15,12 @@ import java.util.List;
 @Repository
 public interface MeetingRepository extends MongoRepository<Meeting, String> {
 
-	List<Meeting> findAllByHost(User user);
-
+    List<Meeting> findAllByHost(User user);
     List<Meeting> findAllByParticipantsContaining(User user);
     List<Meeting> findAllByParticipantsContainingAndEnd(User user, boolean end);
 
-    int countByHost(User user);
+    List<Meeting> findTop2ByHost(User user);
+
     int countByParticipantsContaining(User user);
 
     default List<Meeting> findFilteredMeetings(
@@ -38,15 +38,24 @@ public interface MeetingRepository extends MongoRepository<Meeting, String> {
         List<Criteria> criteriaList = new ArrayList<>();
 
         if (minAge != null) {
-            criteriaList.add(new Criteria().orOperator(Criteria.where("minAge").is(null), Criteria.where("minAge").gte(minAge)));
+            criteriaList.add(new Criteria().orOperator(
+                    Criteria.where("minAge").is(null),
+                    Criteria.where("minAge").gte(minAge)
+            ));
         }
 
         if (maxAge != null) {
-            criteriaList.add(new Criteria().orOperator(Criteria.where("maxAge").is(null), Criteria.where("maxAge").lte(maxAge)));
+            criteriaList.add(new Criteria().orOperator(
+                    Criteria.where("maxAge").is(null),
+                    Criteria.where("maxAge").lte(maxAge)
+            ));
         }
 
         if (gender != null) {
-            criteriaList.add(new Criteria().orOperator(Criteria.where("gender").is(null), Criteria.where("gender").is(gender)));
+            criteriaList.add(new Criteria().orOperator(
+                    Criteria.where("gender").is(null),
+                    Criteria.where("gender").is(gender)
+            ));
         }
 
         if (!criteriaList.isEmpty()) {

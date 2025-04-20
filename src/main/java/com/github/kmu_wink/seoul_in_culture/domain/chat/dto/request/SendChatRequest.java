@@ -7,4 +7,5 @@ public record SendChatRequest(
         @NotBlank
         String content
 ) {
+
 }

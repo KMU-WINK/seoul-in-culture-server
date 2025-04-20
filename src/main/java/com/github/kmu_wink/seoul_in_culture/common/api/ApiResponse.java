@@ -2,7 +2,11 @@ package com.github.kmu_wink.seoul_in_culture.common.api;
 
 import java.util.Map;
 
-public record ApiResponse<T>(boolean success, String errorMessage, T content) {
+public record ApiResponse<T>(
+        boolean success,
+        String errorMessage,
+        T content
+) {
 
     public static <T> ApiResponse<T> ok() {
 

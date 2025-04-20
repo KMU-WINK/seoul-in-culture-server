@@ -8,4 +8,5 @@ public record GetReviewResponse(
 
         Review review
 ) {
+
 }

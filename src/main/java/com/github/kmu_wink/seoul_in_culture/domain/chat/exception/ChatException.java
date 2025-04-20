@@ -4,8 +4,7 @@ import com.github.kmu_wink.seoul_in_culture.common.api.ApiException;
 
 public class ChatException extends ApiException {
 
-    private ChatException(
-            ChatExceptions chatExceptions) {
+    private ChatException(ChatExceptions chatExceptions) {
 
         super(chatExceptions.getMessage());
     }

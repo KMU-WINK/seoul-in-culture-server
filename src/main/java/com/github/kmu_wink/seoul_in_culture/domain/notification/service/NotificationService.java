@@ -24,19 +24,17 @@ public class NotificationService {
     public GetNotificationsResponse getNotifications(User user) {
 
         return GetNotificationsResponse.builder()
-                .notifications(notificationRepository.findAllByUser(user))
+                .notifications(notificationRepository.findAllByUserOrderByIdDesc(user))
                 .build();
     }
 
     public void readNotification(User user, String notificationId) {
 
-        Notification notification = notificationRepository.findById(notificationId).stream()
-                .peek(x -> {
-                    if (!x.getUser().equals(user))
-                        throw NotificationException.of(OTHER_USER_NOTIFICATION);
-                })
-                .findFirst()
-                .orElseThrow(() -> NotificationException.of(NOTIFICATION_NOT_FOUND));
+        Notification notification = notificationRepository.findById(notificationId).stream().peek(x -> {
+            if (!x.getUser().equals(user)) {
+                throw NotificationException.of(OTHER_USER_NOTIFICATION);
+            }
+        }).findFirst().orElseThrow(() -> NotificationException.of(NOTIFICATION_NOT_FOUND));
 
         notification.setUnread(false);
 
@@ -45,27 +43,19 @@ public class NotificationService {
 
     public void readAllNotification(User user) {
 
-        notificationRepository.findAllByUserAndUnreadIsTrue(user)
-                .forEach(notification -> {
-                    notification.setUnread(false);
-                    notificationRepository.save(notification);
-                });
+        notificationRepository.findAllByUserAndUnreadIsTrue(user).forEach(notification -> {
+            notification.setUnread(false);
+            notificationRepository.save(notification);
+        });
     }
 
     public void subscribe(User user, SubscribeRequest dto) {
 
-        fcmTokenRepository.findByUser(user)
-                .ifPresentOrElse(
-                        fcmToken -> {
-                            fcmToken.setToken(dto.token());
-                            fcmTokenRepository.save(fcmToken);
-                        },
-                        () -> fcmTokenRepository.save(
-                                FcmToken.builder()
-                                        .user(user)
-                                        .token(dto.token())
-                                        .build()
-                        )
-                );
+        fcmTokenRepository.findByUser(user).ifPresentOrElse(
+                fcmToken -> {
+                    fcmToken.setToken(dto.token());
+                    fcmTokenRepository.save(fcmToken);
+                }, () -> fcmTokenRepository.save(FcmToken.builder().user(user).token(dto.token()).build())
+        );
     }
 }

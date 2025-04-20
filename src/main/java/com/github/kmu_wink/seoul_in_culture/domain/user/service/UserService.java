@@ -1,8 +1,11 @@
 package com.github.kmu_wink.seoul_in_culture.domain.user.service;
 
+import com.github.kmu_wink.seoul_in_culture.common.s3.S3Service;
 import com.github.kmu_wink.seoul_in_culture.domain.bookmark.repository.BookmarkRepository;
-import com.github.kmu_wink.seoul_in_culture.domain.review.repository.ReviewRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.bookmark.schema.Bookmark;
 import com.github.kmu_wink.seoul_in_culture.domain.meeting.repository.MeetingRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.review.repository.ReviewRepository;
+import com.github.kmu_wink.seoul_in_culture.domain.review.schema.Review;
 import com.github.kmu_wink.seoul_in_culture.domain.user.dto.request.UserEditRequest;
 import com.github.kmu_wink.seoul_in_culture.domain.user.dto.response.GetMyInfoResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.user.dto.response.GetOtherInfoResponse;
@@ -12,6 +15,10 @@ import com.github.kmu_wink.seoul_in_culture.domain.user.repository.UserRepositor
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDate;
+import java.util.UUID;
 
 import static com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserExceptions.USER_NOT_FOUND;
 
@@ -24,14 +31,20 @@ public class UserService {
     private final BookmarkRepository bookmarkRepository;
     private final ReviewRepository reviewRepository;
 
+    private final S3Service s3Service;
+
     public GetMyInfoResponse getMyInfo(User user) {
 
         return GetMyInfoResponse.builder()
                 .user(user)
-                .bookmark(bookmarkRepository.findTop2ByUserOrderByCreatedAtDesc(user))
-                .joinedMeeting(meetingRepository.countByParticipantsContaining(user))
-                .hostedMeeting(meetingRepository.countByHost(user))
-                .review(reviewRepository.findTop2ByTarget(user))
+                .bookmarks(bookmarkRepository.findTop2ByUserOrderByCreatedAtDesc(user)
+                        .stream()
+                        .map(Bookmark::getEvent)
+                        .toList())
+                .joinedMeetings(meetingRepository.countByParticipantsContaining(user))
+                .hostedMeetings(meetingRepository.findAllByHost(user))
+                .reviews(reviewRepository.findTop2ByTarget(user))
+                .score(reviewRepository.findAllByTarget(user).stream().mapToInt(Review::getScore).average().orElse(0))
                 .build();
     }
 
@@ -41,24 +54,37 @@ public class UserService {
 
         return GetOtherInfoResponse.builder()
                 .user(user)
-                .bookmark(bookmarkRepository.countByUser(user))
-                .joinedMeeting(meetingRepository.countByParticipantsContaining(user))
-                .hostedMeeting(meetingRepository.findAllByHost(user))
-                .review(reviewRepository.findTop2ByTarget(user))
+                .bookmarks(bookmarkRepository.countByUser(user))
+                .joinedMeetings(meetingRepository.countByParticipantsContaining(user))
+                .hostedMeetings(meetingRepository.findTop2ByHost(user))
+                .reviews(reviewRepository.findTop2ByTarget(user))
+                .score(reviewRepository.findAllByTarget(user).stream().mapToInt(Review::getScore).average().orElse(0))
                 .build();
     }
 
-    public UpdateMyInfoResponse updateMyInfo(User user, UserEditRequest dto) {
+    public UpdateMyInfoResponse updateMyInfo(User user, MultipartFile avatar, UserEditRequest dto) {
 
-        user.setAvatar(dto.avatar());
+        if (avatar != null) {
+            if (user.getAvatar() != null) {
+                s3Service.urlToKey(user.getAvatar()).ifPresent(s3Service::deleteFile);
+            }
+
+            user.setAvatar(s3Service.upload("avatar/" + UUID.randomUUID(), avatar));
+        }
+
         user.setNickname(dto.nickname());
         user.setDistrict(dto.district());
-        user.setMeetingOpen(dto.meetingOpen());
+
+        if (user.getGender() == null) {
+            user.setGender(dto.gender());
+        }
+
+        if (user.getBirthYear() == null) {
+            user.setBirthYear(LocalDate.now().getYear() - dto.age() + 1);
+        }
 
         user = userRepository.save(user);
 
-        return UpdateMyInfoResponse.builder()
-                .user(user)
-                .build();
+        return UpdateMyInfoResponse.builder().user(user).build();
     }
 }

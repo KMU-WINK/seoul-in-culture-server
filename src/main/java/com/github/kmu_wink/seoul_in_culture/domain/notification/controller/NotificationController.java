@@ -11,7 +11,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @AuthGuard
 @RestController
@@ -33,17 +38,14 @@ public class NotificationController {
 
     @PostMapping("/{notificationId}/read")
     @Operation(summary = "알림 읽기")
-    public ApiResponse<Void> readNotification(
-            @AuthenticationPrincipal User user,
-            @PathVariable String notificationId
-    ) {
+    public ApiResponse<Void> readNotification(@AuthenticationPrincipal User user, @PathVariable String notificationId) {
 
         notificationService.readNotification(user, notificationId);
 
         return ApiResponse.ok();
     }
 
-    @PostMapping("/read/all")
+    @PostMapping("/all/read")
     @Operation(summary = "알림 모두 읽기")
     public ApiResponse<Void> readAllNotification(
             @AuthenticationPrincipal User user

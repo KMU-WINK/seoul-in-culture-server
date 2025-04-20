@@ -16,26 +16,19 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI openAPI() {
 
-        return new OpenAPI()
-                .components(new Components().addSecuritySchemes("JWT", securityScheme()))
+        return new OpenAPI().components(new Components().addSecuritySchemes("JWT", securityScheme()))
                 .info(info())
                 .servers(server());
     }
 
     private Info info() {
 
-        return new Info()
-                .title("Seoul IN Culture")
-                .description("2025 서울 열린데이터광장 공모전")
-                .version("1.0.0");
+        return new Info().title("Seoul IN Culture").description("2025 서울 열린데이터광장 공모전").version("1.0.0");
     }
 
     private SecurityScheme securityScheme() {
 
-        return new SecurityScheme()
-                .type(SecurityScheme.Type.HTTP)
-                .bearerFormat("JWT")
-                .scheme("bearer");
+        return new SecurityScheme().type(SecurityScheme.Type.HTTP).bearerFormat("JWT").scheme("bearer");
     }
 
     private List<Server> server() {
@@ -44,7 +37,7 @@ public class SwaggerConfig {
         server1.setUrl("https://seoul-in-culture.daehyeon.cloud/api");
 
         Server server2 = new Server();
-        server2.setUrl("http://localhost/api");
+        server2.setUrl("http://localhost:8080/api");
 
         return List.of(server1, server2);
     }

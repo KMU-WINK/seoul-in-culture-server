@@ -21,7 +21,9 @@ import java.util.List;
 
 import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_NOT_FOUND;
 import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_NOT_JOINED;
-import static com.github.kmu_wink.seoul_in_culture.domain.review.exception.ReviewExceptions.*;
+import static com.github.kmu_wink.seoul_in_culture.domain.review.exception.ReviewExceptions.ALREADY_REVIEW;
+import static com.github.kmu_wink.seoul_in_culture.domain.review.exception.ReviewExceptions.NOT_REVIEW_MYSELF;
+import static com.github.kmu_wink.seoul_in_culture.domain.review.exception.ReviewExceptions.TARGET_NOT_PARTICIPANT_MEETING;
 import static com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserExceptions.USER_NOT_FOUND;
 
 @Service
@@ -38,53 +40,43 @@ public class ReviewService {
 
         List<Review> reviews = reviewRepository.findAllByTarget(user);
 
-        return GetReviewsResponse.builder()
-                .reviews(reviews)
-                .build();
+        return GetReviewsResponse.builder().reviews(reviews).build();
     }
 
     public GetReviewsResponse getReview(User user, String meetingId) {
 
-        Meeting meeting = meetingRepository.findById(meetingId)
-                .stream()
-                .peek(x -> {
-                    if (!x.getParticipants().contains(user))
-                        throw MeetingException.of(MEETING_NOT_JOINED);
-                })
-                .findFirst()
-                .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+        Meeting meeting = meetingRepository.findById(meetingId).stream().peek(x -> {
+            if (!x.getParticipants().contains(user)) {
+                throw MeetingException.of(MEETING_NOT_JOINED);
+            }
+        }).findFirst().orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
         List<Review> reviews = reviewRepository.findAllByMeetingAndAuthor(meeting, user);
 
-        return GetReviewsResponse.builder()
-                .reviews(reviews)
-                .build();
+        return GetReviewsResponse.builder().reviews(reviews).build();
     }
 
     public GetReviewResponse createReview(User user, String meetingId, String targetUserId, CreateReviewRequest dto) {
 
-        Meeting meeting = meetingRepository.findById(meetingId).stream()
-                .peek(x -> {
-                    if (!x.getParticipants().contains(user))
-                        throw MeetingException.of(MEETING_NOT_JOINED);
-                })
-                .findFirst()
-                .orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+        Meeting meeting = meetingRepository.findById(meetingId).stream().peek(x -> {
+            if (!x.getParticipants().contains(user)) {
+                throw MeetingException.of(MEETING_NOT_JOINED);
+            }
+        }).findFirst().orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
-        User targetUser = userRepository.findById(targetUserId).stream()
-                .peek(x -> {
-                    if (!meeting.getParticipants().contains(x))
-                        throw ReviewException.of(TARGET_NOT_PARTICIPANT_MEETING);
-                })
-                .peek(x -> {
-                    if (x.equals(user))
-                        throw ReviewException.of(NOT_REVIEW_MYSELF);
-                })
-                .findFirst()
-                .orElseThrow(() -> UserException.of(USER_NOT_FOUND));
+        User targetUser = userRepository.findById(targetUserId).stream().peek(x -> {
+            if (!meeting.getParticipants().contains(x)) {
+                throw ReviewException.of(TARGET_NOT_PARTICIPANT_MEETING);
+            }
+        }).peek(x -> {
+            if (x.equals(user)) {
+                throw ReviewException.of(NOT_REVIEW_MYSELF);
+            }
+        }).findFirst().orElseThrow(() -> UserException.of(USER_NOT_FOUND));
 
-        if (reviewRepository.existsByMeetingAndAuthorAndTarget(meeting, user, targetUser))
+        if (reviewRepository.existsByMeetingAndAuthorAndTarget(meeting, user, targetUser)) {
             throw ReviewException.of(ALREADY_REVIEW);
+        }
 
         Review review = Review.builder()
                 .meeting(meeting)
@@ -96,16 +88,8 @@ public class ReviewService {
 
         review = reviewRepository.save(review);
 
-        notificationApi.sendNotification(
-                targetUser,
-                MeetingReviewDetail.builder()
-                        .meeting(meeting)
-                        .user(user)
-                        .build()
-        );
+        notificationApi.sendNotification(targetUser, MeetingReviewDetail.builder().meeting(meeting).user(user).build());
 
-        return GetReviewResponse.builder()
-                .review(review)
-                .build();
+        return GetReviewResponse.builder().review(review).build();
     }
 }

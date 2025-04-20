@@ -29,7 +29,8 @@ public class LoggingFilter extends OncePerRequestFilter {
         long end = System.currentTimeMillis();
         long elapsed = end - start;
 
-        log.info("{} {} {} {} {}ms",
+        log.info(
+                "{} {} {} {} {}ms",
                 request.getMethod(),
                 request.getRequestURI(),
                 getIp(request),

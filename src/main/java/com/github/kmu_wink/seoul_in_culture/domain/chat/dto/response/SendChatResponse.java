@@ -8,4 +8,5 @@ public record SendChatResponse(
 
         Chat message
 ) {
+
 }

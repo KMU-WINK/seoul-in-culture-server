@@ -8,4 +8,5 @@ public record GetMeetingResponse(
 
         Meeting meeting
 ) {
+
 }

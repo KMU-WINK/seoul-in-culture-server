@@ -14,6 +14,4 @@ public interface ChatRepository extends MongoRepository<Chat, String> {
     Optional<Chat> findLastByMeeting(Meeting meeting);
 
     List<Chat> findAllByMeeting(Meeting meeting);
-
-    void deleteAllByMeeting(Meeting meeting);
 }
