@@ -16,7 +16,8 @@ public record RoomListResponse(
     public record Room(
 
             Meeting meeting,
-            Chat last
+            Chat last,
+            int unread
     ) {
 
     }

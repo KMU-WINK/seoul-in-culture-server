@@ -49,6 +49,7 @@ public class ChatService {
                 .map(meeting -> RoomListResponse.Room.builder()
                         .meeting(meeting)
                         .last(chatRepository.findLastByMeeting(meeting).orElse(null))
+                        .unread(chatRepository.countByMeetingAndUnreadContaining(meeting, user))
                         .build())
                 .toList();
 
