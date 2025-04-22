@@ -1,6 +1,8 @@
 package com.github.kmu_wink.seoul_in_culture.domain.event.service;
 
+import com.github.kmu_wink.seoul_in_culture.domain.event.dto.response.EventResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.event.dto.response.EventsResponse;
+import com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventException;
 import com.github.kmu_wink.seoul_in_culture.domain.event.repository.EventRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.event.schema.Event;
 import com.github.kmu_wink.seoul_in_culture.domain.meeting.schema.Meeting;
@@ -17,6 +19,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventExceptions.EVENT_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -57,5 +61,15 @@ public class EventService {
                 .toList();
 
         return EventsResponse.builder().events(results).build();
+    }
+
+    public EventResponse getEvent(String eventId) {
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> EventException.of(EVENT_NOT_FOUND));
+
+        return EventResponse.builder()
+                .event(event)
+                .build();
     }
 }
