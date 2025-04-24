@@ -97,7 +97,12 @@ public class Notification extends BaseSchema {
             }
             case CHAT_MESSAGE -> {
                 ChatMessageDetail detail = (ChatMessageDetail) this.detail;
-                yield String.format("%s: %s", detail.getMessage().getUser(), detail.getMessage().getContent());
+                yield String.format(
+                        "[%s] %s: %s",
+                        detail.getMessage().getMeeting().getTitle(),
+                        detail.getMessage().getUser().getNickname(),
+                        detail.getMessage().getContent()
+                );
             }
         };
     }

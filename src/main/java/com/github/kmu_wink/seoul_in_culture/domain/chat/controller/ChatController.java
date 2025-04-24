@@ -78,11 +78,11 @@ public class ChatController {
         return ApiResponse.ok();
     }
 
-    @GetMapping("/{meetingId}/sse")
+    @GetMapping("/sse")
     @Operation(summary = "SSE 터널 열기")
-    public SseEmitter openSseTunnel(@AuthenticationPrincipal User user, @PathVariable String meetingId) {
+    public SseEmitter openSseTunnel(@AuthenticationPrincipal User user) {
 
-        return chatService.openSseTunnel(user, meetingId);
+        return chatService.openSseTunnel(user);
     }
 }
 

@@ -18,7 +18,7 @@ public record CreateMeetingRequest(
         String description,
 
         @NotNull
-        LocalDateTime datetime,
+        LocalDateTime date,
 
         @Min(2)
         int maxPeople,

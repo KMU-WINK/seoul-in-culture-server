@@ -79,7 +79,7 @@ public class MeetingService {
                 .event(event)
                 .title(dto.title())
                 .description(dto.description())
-                .date(dto.datetime())
+                .date(dto.date())
                 .maxPeople(dto.maxPeople())
                 .minAge(dto.minAge())
                 .maxAge(dto.maxAge())
@@ -179,6 +179,10 @@ public class MeetingService {
             if (!x.getHost().equals(user)) {
                 throw MeetingException.of(MEETING_NOT_OWNER);
             }
+        }).peek(x -> {
+            if (x.isEnd()) {
+                throw MeetingException.of(MEETING_ENDED);
+            }
         }).findFirst().orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
         meeting.setEnd(true);
@@ -197,6 +201,10 @@ public class MeetingService {
         }).peek(x -> {
             if (!x.getHost().equals(user)) {
                 throw MeetingException.of(MEETING_NOT_OWNER);
+            }
+        }).peek(x -> {
+            if (x.isEnd()) {
+                throw MeetingException.of(MEETING_ENDED);
             }
         }).findFirst().orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
@@ -228,6 +236,10 @@ public class MeetingService {
         }).peek(x -> {
             if (!x.getHost().equals(user)) {
                 throw MeetingException.of(MEETING_NOT_OWNER);
+            }
+        }).peek(x -> {
+            if (x.isEnd()) {
+                throw MeetingException.of(MEETING_ENDED);
             }
         }).findFirst().orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 

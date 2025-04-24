@@ -64,10 +64,7 @@ public class ChatService {
             }
         }).findFirst().orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
-        return ChatInfoResponse.builder()
-                .participants(meeting.getParticipants())
-                .messages(chatRepository.findAllByMeeting(meeting))
-                .build();
+        return ChatInfoResponse.builder().chats(chatRepository.findAllByMeeting(meeting)).build();
     }
 
     public SendChatResponse sendChat(User user, String meetingId, @Valid SendChatRequest dto) {
@@ -89,7 +86,7 @@ public class ChatService {
 
             try {
                 emitter.send(SseEmitter.event().id(chat.getId()).name("send_chat").data(chat));
-            } catch (IOException ignored) {
+            } catch (Throwable ignored) {
                 emitters.getOrDefault(meeting, Collections.emptyList()).remove(emitter);
             }
         });
@@ -132,25 +129,20 @@ public class ChatService {
         chatRepository.save(chat);
     }
 
-    public SseEmitter openSseTunnel(User user, String meetingId) {
-
-        Meeting meeting = meetingRepository.findById(meetingId).stream().peek(x -> {
-            if (!x.getParticipants().contains(user)) {
-                throw MeetingException.of(MEETING_NOT_JOINED);
-            }
-        }).findFirst().orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+    public SseEmitter openSseTunnel(User user) {
 
         SseEmitter emitter = new SseEmitter(DEFAULT_SSE_TIMEOUT);
 
-        emitter.onCompletion(() -> emitters.getOrDefault(meeting, Collections.emptyList()).remove(emitter));
-        emitter.onTimeout(() -> emitters.getOrDefault(meeting, Collections.emptyList()).remove(emitter));
+        meetingRepository.findAllByParticipantsContaining(user)
+                .forEach(meeting -> emitters.computeIfAbsent(meeting, x -> new CopyOnWriteArrayList<>()).add(emitter));
 
-        emitters.computeIfAbsent(meeting, x -> new CopyOnWriteArrayList<>()).add(emitter);
+        emitter.onCompletion(() -> emitters.values().forEach(list -> list.remove(emitter)));
+        emitter.onTimeout(() -> emitters.values().forEach(list -> list.remove(emitter)));
 
         try {
             emitter.send(SseEmitter.event().id(UUID.randomUUID().toString()).name("ping").build());
         } catch (IOException e) {
-            emitters.getOrDefault(meeting, Collections.emptyList()).remove(emitter);
+            emitters.values().forEach(list -> list.remove(emitter));
         }
 
         return emitter;
