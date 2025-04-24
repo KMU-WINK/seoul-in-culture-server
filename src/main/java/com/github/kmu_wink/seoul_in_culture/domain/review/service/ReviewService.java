@@ -21,9 +21,7 @@ import java.util.List;
 
 import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_NOT_FOUND;
 import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_NOT_JOINED;
-import static com.github.kmu_wink.seoul_in_culture.domain.review.exception.ReviewExceptions.ALREADY_REVIEW;
-import static com.github.kmu_wink.seoul_in_culture.domain.review.exception.ReviewExceptions.NOT_REVIEW_MYSELF;
-import static com.github.kmu_wink.seoul_in_culture.domain.review.exception.ReviewExceptions.TARGET_NOT_PARTICIPANT_MEETING;
+import static com.github.kmu_wink.seoul_in_culture.domain.review.exception.ReviewExceptions.*;
 import static com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserExceptions.USER_NOT_FOUND;
 
 @Service
@@ -73,6 +71,10 @@ public class ReviewService {
                 throw ReviewException.of(NOT_REVIEW_MYSELF);
             }
         }).findFirst().orElseThrow(() -> UserException.of(USER_NOT_FOUND));
+
+        if (!meeting.isEnd()) {
+            throw ReviewException.of(NOT_ENDED_MEETING);
+        }
 
         if (reviewRepository.existsByMeetingAndAuthorAndTarget(meeting, user, targetUser)) {
             throw ReviewException.of(ALREADY_REVIEW);
