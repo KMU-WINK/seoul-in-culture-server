@@ -52,7 +52,7 @@ public class Notification extends BaseSchema {
             case MEETING_REVIEW -> "/profile/review";
             case CHAT_MESSAGE -> {
                 ChatMessageDetail detail = (ChatMessageDetail) notificationDetail;
-                yield String.format("/chat/%s", detail.getMessage().getMeeting().getId());
+                yield String.format("/chat?id=%s", detail.getMessage().getMeeting().getId());
             }
         };
     }
