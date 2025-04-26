@@ -11,6 +11,7 @@ import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MessagingErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,6 +21,7 @@ public class NotificationApi {
     private final NotificationRepository notificationRepository;
     private final FcmTokenRepository fcmTokenRepository;
 
+    @Async
     public void sendNotification(User user, NotificationDetail detail) {
 
         Notification.Type type = Notification.Type.fromDetail(detail);
