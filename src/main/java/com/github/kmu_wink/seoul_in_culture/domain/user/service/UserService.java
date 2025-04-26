@@ -56,7 +56,7 @@ public class UserService {
                 .user(user)
                 .bookmarks(bookmarkRepository.countByUser(user))
                 .joinedMeetings(meetingRepository.countByParticipantsContaining(user))
-                .hostedMeetings(meetingRepository.findTop2ByHost(user))
+                .hostedMeetings(meetingRepository.findAllByHost(user))
                 .reviews(reviewRepository.findTop2ByTarget(user))
                 .score(reviewRepository.findAllByTarget(user).stream().mapToInt(Review::getScore).average().orElse(0))
                 .build();

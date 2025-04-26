@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 import java.util.Objects;
@@ -14,13 +16,19 @@ import java.util.Objects;
 @Builder
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@Document
 public class User extends BaseSchema {
 
+    @Indexed
     @JsonIgnore
     long kakao;
 
     String avatar;
+
+    @Indexed
     String nickname;
+
+    @Indexed
     String email;
 
     Integer birthYear;

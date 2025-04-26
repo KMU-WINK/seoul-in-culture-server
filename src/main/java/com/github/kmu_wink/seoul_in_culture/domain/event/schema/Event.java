@@ -9,6 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 
@@ -16,11 +18,14 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@Document
 public class Event extends BaseSchema {
 
     @JsonIgnore
+    @Indexed(unique = true)
     int dataId;
 
+    @Indexed
     @Nonnull
     Category category;
 
@@ -30,9 +35,11 @@ public class Event extends BaseSchema {
     @Nonnull
     String title;
 
+    @Indexed
     @Nonnull
     LocalDate startDate;
 
+    @Indexed
     @Nonnull
     LocalDate endDate;
 
@@ -42,6 +49,7 @@ public class Event extends BaseSchema {
     @Nonnull
     String host;
 
+    @Indexed
     @Nullable
     User.District district;
 

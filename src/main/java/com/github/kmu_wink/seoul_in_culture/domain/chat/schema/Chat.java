@@ -7,7 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Set;
 
@@ -15,16 +17,20 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@Document
 public class Chat extends BaseSchema {
 
-    @DBRef
+    @DBRef(lazy = true)
+    @Indexed
     Meeting meeting;
 
-    @DBRef
+    @DBRef(lazy = true)
+    @Indexed
     User user;
 
     String content;
 
-    @DBRef
+    @DBRef(lazy = true)
+    @Indexed
     Set<User> unread;
 }

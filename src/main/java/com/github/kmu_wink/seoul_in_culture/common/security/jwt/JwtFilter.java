@@ -28,7 +28,7 @@ import static com.github.kmu_wink.seoul_in_culture.domain.auth.exception.AuthExc
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final UserRepository repository;
+    private final UserRepository userRepository;
 
     @Override
     public void doFilterInternal(
@@ -43,7 +43,7 @@ public class JwtFilter extends OncePerRequestFilter {
             if (accessToken != null && jwtUtil.validateToken(accessToken)) {
 
                 String id = jwtUtil.extractToken(accessToken);
-                User user = repository.findById(id).orElseThrow(() -> AuthException.of(FAIL_AUTHENTICATION));
+                User user = userRepository.findById(id).orElseThrow(() -> AuthException.of(FAIL_AUTHENTICATION));
 
                 UserAuthentication authentication = new UserAuthentication(user);
 

@@ -9,6 +9,6 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 @Builder
 public class ChatMessageDetail implements NotificationDetail {
 
-    @DBRef
+    @DBRef(lazy = true)
     Chat message;
 }

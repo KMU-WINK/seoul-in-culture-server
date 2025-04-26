@@ -8,7 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -17,31 +19,39 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@Document
 public class Meeting extends BaseSchema {
 
-    @DBRef
+    @DBRef(lazy = true)
+    @Indexed
     Event event;
 
     String title;
     String description;
 
+    @Indexed
     LocalDateTime date;
 
     int maxPeople;
 
     @Nullable
+    @Indexed
     Integer minAge;
 
     @Nullable
+    @Indexed
     Integer maxAge;
 
     @Nullable
+    @Indexed
     User.Gender gender;
 
-    @DBRef
+    @DBRef(lazy = true)
+    @Indexed
     User host;
 
-    @DBRef
+    @DBRef(lazy = true)
+    @Indexed
     Set<User> participants;
 
     boolean end;

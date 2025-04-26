@@ -24,7 +24,10 @@ public class NotificationService {
     public GetNotificationsResponse getNotifications(User user) {
 
         return GetNotificationsResponse.builder()
-                .notifications(notificationRepository.findAllByUserOrderByIdDesc(user))
+                .notifications(notificationRepository.findAllByUserOrderByIdDesc(user)
+                        .stream()
+                        .filter(notification -> !notification.getType().equals(Notification.Type.CHAT_MESSAGE))
+                        .toList())
                 .build();
     }
 

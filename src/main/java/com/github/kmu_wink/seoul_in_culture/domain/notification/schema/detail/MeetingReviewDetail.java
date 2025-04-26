@@ -10,9 +10,9 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 @Builder
 public class MeetingReviewDetail implements NotificationDetail {
 
-    @DBRef
+    @DBRef(lazy = true)
     Meeting meeting;
 
-    @DBRef
+    @DBRef(lazy = true)
     User user;
 }

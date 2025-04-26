@@ -13,7 +13,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.EnumSet;
 
@@ -21,13 +23,15 @@ import java.util.EnumSet;
 @Builder
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@Document
 public class Notification extends BaseSchema {
 
     Type type;
 
     NotificationDetail detail;
 
-    @DBRef
+    @DBRef(lazy = true)
+    @Indexed
     User user;
 
     String url;

@@ -7,17 +7,22 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Builder
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@Document
 public class Bookmark extends BaseSchema {
 
-    @DBRef
+    @DBRef(lazy = true)
+    @Indexed
     User user;
 
-    @DBRef
+    @DBRef(lazy = true)
+    @Indexed
     Event event;
 }

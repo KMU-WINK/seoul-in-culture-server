@@ -10,9 +10,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 @Repository
 public interface EventRepository extends MongoRepository<Event, String> {
@@ -24,44 +22,23 @@ public interface EventRepository extends MongoRepository<Event, String> {
             List<User.District> districts,
             Boolean isFree
     ) {
+        Query query = new Query();
 
-        Function<Query, Query> applyBaseFilters = query -> {
-            if (filterDate != null) {
-                query.addCriteria(Criteria.where("startDate").lte(filterDate).and("endDate").gte(filterDate));
-            }
-            if (categories != null && !categories.isEmpty()) {
-                query.addCriteria(Criteria.where("category").in(categories));
-            }
-            if (districts != null && !districts.isEmpty()) {
-                query.addCriteria(Criteria.where("district").in(districts));
-            }
-            if (isFree != null) {
-                query.addCriteria(Criteria.where("free").is(isFree));
-            }
-            return query;
-        };
-
-        LocalDate today = LocalDate.now();
-        int limit = 100;
-
-        Query futureQuery = applyBaseFilters.apply(new Query());
-        futureQuery.addCriteria(Criteria.where("startDate").gte(today));
-        futureQuery.with(Sort.by(Sort.Direction.ASC, "startDate")).limit(limit);
-        List<Event> future = mongoTemplate.find(futureQuery, Event.class);
-
-        if (future.size() >= limit) {
-            return future;
+        if (filterDate != null) {
+            query.addCriteria(Criteria.where("startDate").lte(filterDate).and("endDate").gt(filterDate));
+        }
+        if (categories != null && !categories.isEmpty()) {
+            query.addCriteria(Criteria.where("category").in(categories));
+        }
+        if (districts != null && !districts.isEmpty()) {
+            query.addCriteria(Criteria.where("district").in(districts));
+        }
+        if (isFree != null) {
+            query.addCriteria(Criteria.where("free").is(isFree));
         }
 
-        int remaining = limit - future.size();
-        Query pastQuery = applyBaseFilters.apply(new Query());
-        pastQuery.addCriteria(Criteria.where("startDate").lt(today));
-        pastQuery.with(Sort.by(Sort.Direction.DESC, "startDate")).limit(remaining);
-        List<Event> past = mongoTemplate.find(pastQuery, Event.class);
+        query.with(Sort.by(Sort.Order.desc("startDate"), Sort.Order.asc("endDate")));
 
-        List<Event> result = new ArrayList<>(limit);
-        result.addAll(future);
-        result.addAll(past);
-        return result;
+        return mongoTemplate.find(query, Event.class);
     }
 }

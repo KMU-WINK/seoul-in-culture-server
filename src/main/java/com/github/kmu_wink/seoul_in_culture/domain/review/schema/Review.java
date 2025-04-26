@@ -7,21 +7,27 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Builder
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@Document
 public class Review extends BaseSchema {
 
-    @DBRef
+    @DBRef(lazy = true)
+    @Indexed
     Meeting meeting;
 
-    @DBRef
+    @DBRef(lazy = true)
+    @Indexed
     User author;
 
-    @DBRef
+    @DBRef(lazy = true)
+    @Indexed
     User target;
 
     int score;
