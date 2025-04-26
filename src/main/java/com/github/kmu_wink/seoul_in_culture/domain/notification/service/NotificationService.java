@@ -51,11 +51,14 @@ public class NotificationService {
 
     public void subscribe(User user, SubscribeRequest dto) {
 
-        fcmTokenRepository.findByUser(user).ifPresentOrElse(
-                fcmToken -> {
-                    fcmToken.setToken(dto.token());
-                    fcmTokenRepository.save(fcmToken);
-                }, () -> fcmTokenRepository.save(FcmToken.builder().user(user).token(dto.token()).build())
-        );
+        if (fcmTokenRepository.existsByToken(dto.token())) {
+
+            FcmToken token = fcmTokenRepository.findByToken(dto.token()).orElseThrow();
+            token.setUser(user);
+            fcmTokenRepository.save(token);
+        } else {
+
+            fcmTokenRepository.save(FcmToken.builder().user(user).token(dto.token()).build());
+        }
     }
 }

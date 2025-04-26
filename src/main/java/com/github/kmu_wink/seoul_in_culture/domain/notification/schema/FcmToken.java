@@ -2,6 +2,7 @@ package com.github.kmu_wink.seoul_in_culture.domain.notification.schema;
 
 import com.github.kmu_wink.seoul_in_culture.common.mongo.BaseSchema;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
+import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,6 +16,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 public class FcmToken extends BaseSchema {
 
     @DBRef
+    @Nullable
     User user;
 
     String token;

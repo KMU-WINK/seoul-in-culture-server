@@ -32,7 +32,8 @@ public class NotificationApi {
                 .unread(true)
                 .build());
 
-        fcmTokenRepository.findByUser(user).map(FcmToken::getToken).ifPresent(token -> {
+        fcmTokenRepository.findAllByUser(user).stream().map(FcmToken::getToken).forEach(token -> {
+
             Message message = Message.builder()
                     .setToken(token)
                     .putData("title", notification.getTitle())

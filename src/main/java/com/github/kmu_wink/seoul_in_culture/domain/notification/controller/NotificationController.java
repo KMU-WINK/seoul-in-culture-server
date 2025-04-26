@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@AuthGuard
 @RestController
 @RequestMapping("/notification")
 @RequiredArgsConstructor
@@ -27,6 +26,7 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
+    @AuthGuard
     @GetMapping
     @Operation(summary = "알림 목록")
     public ApiResponse<GetNotificationsResponse> getNotifications(
@@ -36,6 +36,7 @@ public class NotificationController {
         return ApiResponse.ok(notificationService.getNotifications(user));
     }
 
+    @AuthGuard
     @PostMapping("/{notificationId}/read")
     @Operation(summary = "알림 읽기")
     public ApiResponse<Void> readNotification(@AuthenticationPrincipal User user, @PathVariable String notificationId) {
@@ -45,6 +46,7 @@ public class NotificationController {
         return ApiResponse.ok();
     }
 
+    @AuthGuard
     @PostMapping("/all/read")
     @Operation(summary = "알림 모두 읽기")
     public ApiResponse<Void> readAllNotification(
