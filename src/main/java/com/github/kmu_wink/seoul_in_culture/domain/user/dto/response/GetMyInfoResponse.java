@@ -15,7 +15,7 @@ public record GetMyInfoResponse(
 
         Collection<Event> bookmarks,
 
-        int joinedMeetings,
+        long joinedMeetings,
         Collection<Meeting> hostedMeetings,
 
         Collection<Review> reviews,

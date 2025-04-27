@@ -12,9 +12,9 @@ public record GetOtherInfoResponse(
 
         User user,
 
-        int bookmarks,
+        long bookmarks,
 
-        int joinedMeetings,
+        long joinedMeetings,
         Collection<Meeting> hostedMeetings,
 
         Collection<Review> reviews,

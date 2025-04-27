@@ -2,7 +2,6 @@ package com.github.kmu_wink.seoul_in_culture.domain.notification.api;
 
 import com.github.kmu_wink.seoul_in_culture.domain.notification.repository.FcmTokenRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.repository.NotificationRepository;
-import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.FcmToken;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.Notification;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.NotificationDetail;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
@@ -34,7 +33,7 @@ public class NotificationApi {
                 .unread(true)
                 .build());
 
-        fcmTokenRepository.findAllByUser(user).stream().map(FcmToken::getToken).forEach(token -> {
+        fcmTokenRepository.findAllByUser(user).forEach(token -> {
 
             Message message = Message.builder()
                     .setToken(token)

@@ -9,6 +9,8 @@ spring:
   data:
     mongodb:
       auto-index-creation: true
+  lifecycle:
+    timeout-per-shutdown-phase: 5s
 
 springdoc:
   default-consumes-media-type: application/json

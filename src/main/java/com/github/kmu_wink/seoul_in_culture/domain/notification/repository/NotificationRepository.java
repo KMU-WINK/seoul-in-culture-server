@@ -2,29 +2,17 @@ package com.github.kmu_wink.seoul_in_culture.domain.notification.repository;
 
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.Notification;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
-@Repository
-public interface NotificationRepository extends MongoRepository<Notification, String> {
+public interface NotificationRepository {
 
-    List<Notification> findAllByUser(User user, Sort sort);
+    Optional<Notification> findById(String id);
 
-    default void readAllNotification(MongoTemplate mongoTemplate, User user) {
+    List<Notification> findAllByUser(User user);
 
-        Query query = new Query();
-        query.addCriteria(Criteria.where("user").is(user).and("unread").is(true));
+    void readAllNotification(User user);
 
-        Update update = new Update();
-        update.set("unread", false);
-
-        mongoTemplate.updateMulti(query, update, Notification.class);
-    }
+    Notification save(Notification notification);
 }

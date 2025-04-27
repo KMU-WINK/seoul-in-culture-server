@@ -2,7 +2,6 @@ package com.github.kmu_wink.seoul_in_culture.domain.user.service;
 
 import com.github.kmu_wink.seoul_in_culture.common.s3.S3Service;
 import com.github.kmu_wink.seoul_in_culture.domain.bookmark.repository.BookmarkRepository;
-import com.github.kmu_wink.seoul_in_culture.domain.bookmark.schema.Bookmark;
 import com.github.kmu_wink.seoul_in_culture.domain.meeting.repository.MeetingRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.review.repository.ReviewRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.review.schema.Review;
@@ -20,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import static com.github.kmu_wink.seoul_in_culture.common.mongo.MongoConfig.LATEST_SORT;
 import static com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserExceptions.USER_NOT_FOUND;
 
 @Service
@@ -38,14 +36,11 @@ public class UserService {
 
         return GetMyInfoResponse.builder()
                 .user(user)
-                .bookmarks(bookmarkRepository.findTop2ByUser(user, LATEST_SORT)
-                        .stream()
-                        .map(Bookmark::getEvent)
-                        .toList())
+                .bookmarks(bookmarkRepository.findTop2ByUser(user))
                 .joinedMeetings(meetingRepository.countByParticipantsContaining(user))
-                .hostedMeetings(meetingRepository.findAllByHost(user, LATEST_SORT))
-                .reviews(reviewRepository.findTop2ByTarget(user, LATEST_SORT))
-                .score(reviewRepository.findAllByTarget(user, LATEST_SORT).stream().mapToInt(Review::getScore).average().orElse(0))
+                .hostedMeetings(meetingRepository.findAllByHost(user))
+                .reviews(reviewRepository.findTop2ByTarget(user))
+                .score(reviewRepository.findAllByTarget(user).stream().mapToInt(Review::getScore).average().orElse(0))
                 .build();
     }
 
@@ -57,9 +52,9 @@ public class UserService {
                 .user(user)
                 .bookmarks(bookmarkRepository.countByUser(user))
                 .joinedMeetings(meetingRepository.countByParticipantsContaining(user))
-                .hostedMeetings(meetingRepository.findAllByHost(user, LATEST_SORT))
-                .reviews(reviewRepository.findTop2ByTarget(user, LATEST_SORT))
-                .score(reviewRepository.findAllByTarget(user, LATEST_SORT).stream().mapToInt(Review::getScore).average().orElse(0))
+                .hostedMeetings(meetingRepository.findAllByHost(user))
+                .reviews(reviewRepository.findTop2ByTarget(user))
+                .score(reviewRepository.findAllByTarget(user).stream().mapToInt(Review::getScore).average().orElse(0))
                 .build();
     }
 

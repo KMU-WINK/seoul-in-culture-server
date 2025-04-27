@@ -17,14 +17,12 @@ import com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserException;
 import com.github.kmu_wink.seoul_in_culture.domain.user.repository.UserRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import static com.github.kmu_wink.seoul_in_culture.common.mongo.MongoConfig.LATEST_SORT;
 import static com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventExceptions.EVENT_NOT_FOUND;
 import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_ALREADY_JOINED;
 import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_ENDED;
@@ -44,13 +42,11 @@ public class MeetingService {
     private final EventRepository eventRepository;
     private final MeetingRepository meetingRepository;
 
-    private final MongoTemplate mongoTemplate;
-
     private final NotificationApi notificationApi;
 
     public GetMeetingsResponse getMyMeetings(User user, boolean active) {
 
-        List<Meeting> meetings = meetingRepository.findAllByParticipantsContainingAndEnd(user, !active, LATEST_SORT);
+        List<Meeting> meetings = meetingRepository.findAllByParticipantsAndEnd(user, !active);
 
         return GetMeetingsResponse.builder().meetings(meetings).build();
     }
@@ -59,7 +55,7 @@ public class MeetingService {
 
         Event event = eventRepository.findById(eventId).orElseThrow(() -> EventException.of(EVENT_NOT_FOUND));
 
-        List<Meeting> meetings = meetingRepository.findFilteredMeetings(mongoTemplate, event, minAge, maxAge, gender);
+        List<Meeting> meetings = meetingRepository.findMeetingsWithFilter(event, minAge, maxAge, gender);
 
         return GetMeetingsResponse.builder().meetings(meetings).build();
     }

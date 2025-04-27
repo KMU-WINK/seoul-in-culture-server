@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -47,7 +48,7 @@ public class FetchEventListBySeoulDataApiScheduler {
 
         int totalPage = getTotalPage();
 
-        List<Event> saved = eventRepository.saveAll(IntStream.iterate(1, i -> i <= totalPage, i -> i + 1000)
+        Collection<Event> saved = eventRepository.saveAll(IntStream.iterate(1, i -> i <= totalPage, i -> i + 1000)
                 .mapToObj(i -> fetchPage(i, totalPage))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
@@ -57,9 +58,6 @@ public class FetchEventListBySeoulDataApiScheduler {
                 .map(Optional::get)
                 .toList());
 
-        if (saved.isEmpty()) {
-            return;
-        }
         log.info("{}개의 이벤트가 추가되었습니다.", saved.size());
     }
 

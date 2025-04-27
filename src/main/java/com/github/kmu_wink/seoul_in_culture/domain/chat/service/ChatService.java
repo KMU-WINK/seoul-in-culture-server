@@ -44,12 +44,12 @@ public class ChatService {
 
     public RoomListResponse getRoomList(User user) {
 
-        List<RoomListResponse.Room> rooms = meetingRepository.findAllByParticipantsContaining(user)
+        List<RoomListResponse.Room> rooms = meetingRepository.findAllByParticipants(user)
                 .stream()
                 .map(meeting -> RoomListResponse.Room.builder()
                         .meeting(meeting)
-                        .last(chatRepository.findTopByMeeting(meeting).orElse(null))
-                        .unread(chatRepository.countByMeetingAndUnreadContaining(meeting, user))
+                        .last(chatRepository.findFirstByMeeting(meeting).orElse(null))
+                        .unread(chatRepository.countUnreadByMeeting(meeting, user))
                         .build())
                 .toList();
 
@@ -110,10 +110,7 @@ public class ChatService {
             }
         }).findFirst().orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
-        chatRepository.findAllByMeeting(meeting).forEach(chatMessage -> {
-            chatMessage.getUnread().remove(user);
-            chatRepository.save(chatMessage);
-        });
+        chatRepository.readAll(meeting, user);
     }
 
     public void readChat(User user, String chattingId) {
@@ -133,7 +130,7 @@ public class ChatService {
 
         SseEmitter emitter = new SseEmitter(DEFAULT_SSE_TIMEOUT);
 
-        meetingRepository.findAllByParticipantsContaining(user)
+        meetingRepository.findAllByParticipants(user)
                 .forEach(meeting -> emitters.computeIfAbsent(meeting, x -> new CopyOnWriteArrayList<>()).add(emitter));
 
         emitter.onCompletion(() -> emitters.values().forEach(list -> list.remove(emitter)));

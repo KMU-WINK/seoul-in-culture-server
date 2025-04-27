@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static com.github.kmu_wink.seoul_in_culture.common.mongo.MongoConfig.LATEST_SORT;
 import static com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventExceptions.EVENT_NOT_FOUND;
 
 @Service
@@ -24,10 +23,7 @@ public class BookmarkService {
 
     public GetBookmarkResponse getBookmark(User user) {
 
-        List<Event> eventList = bookmarkRepository.findAllByUser(user, LATEST_SORT)
-                .stream()
-                .map(Bookmark::getEvent)
-                .toList();
+        List<Event> eventList = bookmarkRepository.findAllByUser(user);
 
         return GetBookmarkResponse.builder().bookmark(eventList).build();
     }

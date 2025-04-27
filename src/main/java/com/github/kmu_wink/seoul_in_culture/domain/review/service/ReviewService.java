@@ -17,7 +17,6 @@ import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import static com.github.kmu_wink.seoul_in_culture.common.mongo.MongoConfig.LATEST_SORT;
 import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_NOT_FOUND;
 import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_NOT_JOINED;
 import static com.github.kmu_wink.seoul_in_culture.domain.review.exception.ReviewExceptions.ALREADY_REVIEW;
@@ -38,7 +37,7 @@ public class ReviewService {
 
     public GetReviewsResponse getReviews(User user) {
 
-        return GetReviewsResponse.builder().reviews(reviewRepository.findAllByTarget(user, LATEST_SORT)).build();
+        return GetReviewsResponse.builder().reviews(reviewRepository.findAllByTarget(user)).build();
     }
 
     public GetReviewsResponse getReview(User user, String meetingId) {
@@ -50,7 +49,7 @@ public class ReviewService {
         }).findFirst().orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
         return GetReviewsResponse.builder()
-                .reviews(reviewRepository.findAllByMeetingAndAuthor(meeting, user, LATEST_SORT))
+                .reviews(reviewRepository.findAllByMeetingAndAuthor(meeting, user))
                 .build();
     }
 

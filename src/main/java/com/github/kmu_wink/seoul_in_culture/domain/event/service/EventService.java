@@ -5,20 +5,14 @@ import com.github.kmu_wink.seoul_in_culture.domain.event.dto.response.EventsResp
 import com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventException;
 import com.github.kmu_wink.seoul_in_culture.domain.event.repository.EventRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.event.schema.Event;
-import com.github.kmu_wink.seoul_in_culture.domain.meeting.schema.Meeting;
+import com.github.kmu_wink.seoul_in_culture.domain.meeting.repository.MeetingRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
-import com.mongodb.DBRef;
 import lombok.RequiredArgsConstructor;
-import org.bson.Document;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventExceptions.EVENT_NOT_FOUND;
 
@@ -27,8 +21,7 @@ import static com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventE
 public class EventService {
 
     private final EventRepository eventRepository;
-
-    private final MongoTemplate mongoTemplate;
+    private final MeetingRepository meetingRepository;
 
     public EventsResponse getEvents(
             LocalDate date,
@@ -37,21 +30,8 @@ public class EventService {
             Boolean isFree
     ) {
 
-        List<Event> events = eventRepository.findFilteredEvents(mongoTemplate, date, categories, districts, isFree);
-        List<String> eventIds = events.stream().map(Event::getId).toList();
-
-        Map<String, Integer> countMap = mongoTemplate.aggregate(
-                        Aggregation.newAggregation(
-                                Aggregation.match(Criteria.where("event").in(eventIds)),
-                                Aggregation.group("event").count().as("meetings")
-                        ), Meeting.class, Document.class
-                )
-                .getMappedResults()
-                .stream()
-                .collect(Collectors.toMap(
-                        doc -> doc.get("_id", DBRef.class).getId().toString(),
-                        doc -> doc.get("meetings", Integer.class)
-                ));
+        List<Event> events = eventRepository.findAllWithFilter(date, categories, districts, isFree);
+        Map<String, Integer> countMap = meetingRepository.countByEvents(events);
 
         List<EventsResponse.EventDto> results = events.stream()
                 .map(event -> EventsResponse.EventDto.builder()
