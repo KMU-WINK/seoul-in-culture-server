@@ -48,7 +48,7 @@ public class ChatService {
                 .stream()
                 .map(meeting -> RoomListResponse.Room.builder()
                         .meeting(meeting)
-                        .last(chatRepository.findTopByMeetingOrderByCreatedAtDesc(meeting).orElse(null))
+                        .last(chatRepository.findTopByMeeting(meeting).orElse(null))
                         .unread(chatRepository.countByMeetingAndUnreadContaining(meeting, user))
                         .build())
                 .toList();

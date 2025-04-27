@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface ChatRepository extends MongoRepository<Chat, String> {
 
-    Optional<Chat> findTopByMeetingOrderByCreatedAtDesc(Meeting meeting);
+    Optional<Chat> findTopByMeeting(Meeting meeting);
 
     List<Chat> findAllByMeeting(Meeting meeting);
 

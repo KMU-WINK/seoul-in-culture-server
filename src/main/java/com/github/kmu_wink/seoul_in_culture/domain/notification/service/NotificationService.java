@@ -9,8 +9,10 @@ import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.FcmToken;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.Notification;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
+import static com.github.kmu_wink.seoul_in_culture.common.mongo.MongoConfig.LATEST_SORT;
 import static com.github.kmu_wink.seoul_in_culture.domain.notification.exception.NotificationExceptions.NOTIFICATION_NOT_FOUND;
 import static com.github.kmu_wink.seoul_in_culture.domain.notification.exception.NotificationExceptions.OTHER_USER_NOTIFICATION;
 
@@ -21,10 +23,12 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final FcmTokenRepository fcmTokenRepository;
 
+    private final MongoTemplate mongoTemplate;
+
     public GetNotificationsResponse getNotifications(User user) {
 
         return GetNotificationsResponse.builder()
-                .notifications(notificationRepository.findAllByUserOrderByIdDesc(user)
+                .notifications(notificationRepository.findAllByUser(user, LATEST_SORT)
                         .stream()
                         .filter(notification -> !notification.getType().equals(Notification.Type.CHAT_MESSAGE))
                         .toList())
@@ -46,10 +50,7 @@ public class NotificationService {
 
     public void readAllNotification(User user) {
 
-        notificationRepository.findAllByUserAndUnreadIsTrue(user).forEach(notification -> {
-            notification.setUnread(false);
-            notificationRepository.save(notification);
-        });
+        notificationRepository.readAllNotification(mongoTemplate, user);
     }
 
     public void subscribe(User user, SubscribeRequest dto) {

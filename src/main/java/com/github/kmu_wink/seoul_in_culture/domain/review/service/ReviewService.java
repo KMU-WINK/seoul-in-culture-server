@@ -17,11 +17,13 @@ import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
+import static com.github.kmu_wink.seoul_in_culture.common.mongo.MongoConfig.LATEST_SORT;
 import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_NOT_FOUND;
 import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_NOT_JOINED;
-import static com.github.kmu_wink.seoul_in_culture.domain.review.exception.ReviewExceptions.*;
+import static com.github.kmu_wink.seoul_in_culture.domain.review.exception.ReviewExceptions.ALREADY_REVIEW;
+import static com.github.kmu_wink.seoul_in_culture.domain.review.exception.ReviewExceptions.NOT_ENDED_MEETING;
+import static com.github.kmu_wink.seoul_in_culture.domain.review.exception.ReviewExceptions.NOT_REVIEW_MYSELF;
+import static com.github.kmu_wink.seoul_in_culture.domain.review.exception.ReviewExceptions.TARGET_NOT_PARTICIPANT_MEETING;
 import static com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserExceptions.USER_NOT_FOUND;
 
 @Service
@@ -36,9 +38,7 @@ public class ReviewService {
 
     public GetReviewsResponse getReviews(User user) {
 
-        List<Review> reviews = reviewRepository.findAllByTarget(user);
-
-        return GetReviewsResponse.builder().reviews(reviews).build();
+        return GetReviewsResponse.builder().reviews(reviewRepository.findAllByTarget(user, LATEST_SORT)).build();
     }
 
     public GetReviewsResponse getReview(User user, String meetingId) {
@@ -49,9 +49,9 @@ public class ReviewService {
             }
         }).findFirst().orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
-        List<Review> reviews = reviewRepository.findAllByMeetingAndAuthor(meeting, user);
-
-        return GetReviewsResponse.builder().reviews(reviews).build();
+        return GetReviewsResponse.builder()
+                .reviews(reviewRepository.findAllByMeetingAndAuthor(meeting, user, LATEST_SORT))
+                .build();
     }
 
     public GetReviewResponse createReview(User user, String meetingId, String targetUserId, CreateReviewRequest dto) {
@@ -59,6 +59,10 @@ public class ReviewService {
         Meeting meeting = meetingRepository.findById(meetingId).stream().peek(x -> {
             if (!x.getParticipants().contains(user)) {
                 throw MeetingException.of(MEETING_NOT_JOINED);
+            }
+        }).peek(x -> {
+            if (!x.isEnd()) {
+                throw ReviewException.of(NOT_ENDED_MEETING);
             }
         }).findFirst().orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
@@ -71,10 +75,6 @@ public class ReviewService {
                 throw ReviewException.of(NOT_REVIEW_MYSELF);
             }
         }).findFirst().orElseThrow(() -> UserException.of(USER_NOT_FOUND));
-
-        if (!meeting.isEnd()) {
-            throw ReviewException.of(NOT_ENDED_MEETING);
-        }
 
         if (reviewRepository.existsByMeetingAndAuthorAndTarget(meeting, user, targetUser)) {
             throw ReviewException.of(ALREADY_REVIEW);

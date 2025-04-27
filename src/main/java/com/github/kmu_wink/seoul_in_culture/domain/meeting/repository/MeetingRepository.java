@@ -3,6 +3,7 @@ package com.github.kmu_wink.seoul_in_culture.domain.meeting.repository;
 import com.github.kmu_wink.seoul_in_culture.domain.event.schema.Event;
 import com.github.kmu_wink.seoul_in_culture.domain.meeting.schema.Meeting;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -12,14 +13,14 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.github.kmu_wink.seoul_in_culture.common.mongo.MongoConfig.LATEST_SORT;
+
 @Repository
 public interface MeetingRepository extends MongoRepository<Meeting, String> {
 
-    List<Meeting> findAllByHost(User user);
+    List<Meeting> findAllByHost(User user, Sort sort);
     List<Meeting> findAllByParticipantsContaining(User user);
-    List<Meeting> findAllByParticipantsContainingAndEnd(User user, boolean end);
-
-    List<Meeting> findTop2ByHost(User user);
+    List<Meeting> findAllByParticipantsContainingAndEnd(User user, boolean end, Sort sort);
 
     int countByParticipantsContaining(User user);
 
@@ -61,6 +62,8 @@ public interface MeetingRepository extends MongoRepository<Meeting, String> {
         if (!criteriaList.isEmpty()) {
             query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
         }
+
+        query.with(LATEST_SORT);
 
         return mongoTemplate.find(query, Meeting.class);
     }

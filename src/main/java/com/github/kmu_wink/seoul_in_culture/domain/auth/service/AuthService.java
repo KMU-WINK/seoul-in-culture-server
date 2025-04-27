@@ -30,8 +30,8 @@ public class AuthService {
         KakaoUser kakaoUser = kakaoApi.getKakaoUser(dto.token())
                 .orElseThrow(() -> AuthException.of(INVALID_KAKAO_TOKEN));
 
-        User user = userRepository.save(userRepository.findByKakao(kakaoUser.id())
-                .orElseGet(() -> User.builder()
+        User user = userRepository.findByKakao(kakaoUser.id())
+                .orElseGet(() -> userRepository.save(User.builder()
                         .kakao(kakaoUser.id())
                         .nickname(generateRandomNickname())
                         .email(kakaoUser.email())

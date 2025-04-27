@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import static com.github.kmu_wink.seoul_in_culture.common.mongo.MongoConfig.LATEST_SORT;
 import static com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserExceptions.USER_NOT_FOUND;
 
 @Service
@@ -37,14 +38,14 @@ public class UserService {
 
         return GetMyInfoResponse.builder()
                 .user(user)
-                .bookmarks(bookmarkRepository.findTop2ByUserOrderByCreatedAtDesc(user)
+                .bookmarks(bookmarkRepository.findTop2ByUser(user, LATEST_SORT)
                         .stream()
                         .map(Bookmark::getEvent)
                         .toList())
                 .joinedMeetings(meetingRepository.countByParticipantsContaining(user))
-                .hostedMeetings(meetingRepository.findAllByHost(user))
-                .reviews(reviewRepository.findTop2ByTarget(user))
-                .score(reviewRepository.findAllByTarget(user).stream().mapToInt(Review::getScore).average().orElse(0))
+                .hostedMeetings(meetingRepository.findAllByHost(user, LATEST_SORT))
+                .reviews(reviewRepository.findTop2ByTarget(user, LATEST_SORT))
+                .score(reviewRepository.findAllByTarget(user, LATEST_SORT).stream().mapToInt(Review::getScore).average().orElse(0))
                 .build();
     }
 
@@ -56,9 +57,9 @@ public class UserService {
                 .user(user)
                 .bookmarks(bookmarkRepository.countByUser(user))
                 .joinedMeetings(meetingRepository.countByParticipantsContaining(user))
-                .hostedMeetings(meetingRepository.findAllByHost(user))
-                .reviews(reviewRepository.findTop2ByTarget(user))
-                .score(reviewRepository.findAllByTarget(user).stream().mapToInt(Review::getScore).average().orElse(0))
+                .hostedMeetings(meetingRepository.findAllByHost(user, LATEST_SORT))
+                .reviews(reviewRepository.findTop2ByTarget(user, LATEST_SORT))
+                .score(reviewRepository.findAllByTarget(user, LATEST_SORT).stream().mapToInt(Review::getScore).average().orElse(0))
                 .build();
     }
 

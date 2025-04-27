@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import static com.github.kmu_wink.seoul_in_culture.common.mongo.MongoConfig.LATEST_SORT;
 import static com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventExceptions.EVENT_NOT_FOUND;
 import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_ALREADY_JOINED;
 import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_ENDED;
@@ -49,7 +50,7 @@ public class MeetingService {
 
     public GetMeetingsResponse getMyMeetings(User user, boolean active) {
 
-        List<Meeting> meetings = meetingRepository.findAllByParticipantsContainingAndEnd(user, !active);
+        List<Meeting> meetings = meetingRepository.findAllByParticipantsContainingAndEnd(user, !active, LATEST_SORT);
 
         return GetMeetingsResponse.builder().meetings(meetings).build();
     }
