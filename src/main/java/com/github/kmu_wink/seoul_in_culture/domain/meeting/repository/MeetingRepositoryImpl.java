@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -110,24 +111,25 @@ public class MeetingRepositoryImpl implements MeetingRepository {
     @Override
     public List<Meeting> findMeetingsWithFilter(Event event, Integer minAge, Integer maxAge, User.Gender gender) {
 
-        Criteria criteria = Criteria.where("event").is(event);
+        List<Criteria> criteriaList = new ArrayList<>();
+        criteriaList.add(Criteria.where("event").is(event));
 
         if (minAge != null) {
-            criteria.andOperator(new Criteria().orOperator(
+            criteriaList.add(new Criteria().orOperator(
                     Criteria.where("minAge").is(null),
                     Criteria.where("minAge").gte(minAge)
             ));
         }
 
         if (maxAge != null) {
-            criteria.andOperator(new Criteria().orOperator(
+            criteriaList.add(new Criteria().orOperator(
                     Criteria.where("maxAge").is(null),
                     Criteria.where("maxAge").lte(maxAge)
             ));
         }
 
         if (gender != null) {
-            criteria.andOperator(new Criteria().orOperator(
+            criteriaList.add(new Criteria().orOperator(
                     Criteria.where("gender").is(null),
                     Criteria.where("gender").is(gender)
             ));
@@ -135,7 +137,7 @@ public class MeetingRepositoryImpl implements MeetingRepository {
 
         return operations.aggregate(
                 newAggregation(
-                        match(criteria),
+                        match(new Criteria().andOperator(criteriaList)),
 
                         sort(LATEST_SORT),
 
