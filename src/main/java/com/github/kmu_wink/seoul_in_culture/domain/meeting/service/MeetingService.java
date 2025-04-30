@@ -74,8 +74,17 @@ public class MeetingService {
 
         Event event = eventRepository.findById(eventId).orElseThrow(() -> EventException.of(EVENT_NOT_FOUND));
 
-        if (dto.date().toLocalDate().isBefore(event.getStartDate()) || dto.date().toLocalDate().isAfter(event.getEndDate())) {
+        if (dto.date().toLocalDate().isBefore(event.getStartDate()) ||
+                dto.date().toLocalDate().isAfter(event.getEndDate())) {
+
             throw MeetingException.of(MEETING_DATE_OUT_OF_EVENT_PERIOD);
+        }
+
+        if ((Objects.nonNull(dto.maxAge()) && user.getAge() > dto.maxAge()) ||
+                (Objects.nonNull(dto.minAge()) && user.getAge() < dto.minAge()) ||
+                (Objects.nonNull(dto.gender()) && !user.getGender().equals(dto.gender()))) {
+
+            throw MeetingException.of(MEETING_NOT_SATISFIED);
         }
 
         Meeting meeting = meetingRepository.save(Meeting.builder()
