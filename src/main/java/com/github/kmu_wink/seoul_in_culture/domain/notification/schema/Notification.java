@@ -6,6 +6,7 @@ import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.Me
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingJoinDetail;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingLeaveDetail;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingReviewDetail;
+import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingSuccessDetail;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.NotificationDetail;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 import lombok.AllArgsConstructor;
@@ -53,6 +54,10 @@ public class Notification extends BaseSchema {
                 MeetingHostDelegateDetail detail = (MeetingHostDelegateDetail) notificationDetail;
                 yield String.format("/meeting/%s", detail.getMeeting().getId());
             }
+            case MEETING_SUCCESS -> {
+                MeetingSuccessDetail detail = (MeetingSuccessDetail) notificationDetail;
+                yield String.format("/meeting/%s", detail.getMeeting().getId());
+            }
             case MEETING_REVIEW -> "/profile/review";
             case CHAT_MESSAGE -> {
                 ChatMessageDetail detail = (ChatMessageDetail) notificationDetail;
@@ -67,6 +72,7 @@ public class Notification extends BaseSchema {
             case MEETING_JOIN -> "모임에 새로운 참여자가 생겼습니다.";
             case MEETING_LEAVE -> "모임에 참여자가 나갔습니다.";
             case MEETING_HOST_DELEGATE -> "모임의 호스트가 변경되었습니다.";
+            case MEETING_SUCCESS -> "모임이 종료되었습니다.";
             case MEETING_REVIEW -> "리뷰가 달렸습니다.";
             case CHAT_MESSAGE -> "새로운 메시지가 왔습니다";
         };
@@ -89,6 +95,13 @@ public class Notification extends BaseSchema {
                         "%s의 호스트가 %s님으로 변경되었습니다.",
                         detail.getMeeting().getTitle(),
                         detail.getMeeting().getHost().getNickname()
+                );
+            }
+            case MEETING_SUCCESS -> {
+                MeetingSuccessDetail detail = (MeetingSuccessDetail) this.detail;
+                yield String.format(
+                        "%s의 모임이 종료되었습니다.",
+                        detail.getMeeting().getTitle()
                 );
             }
             case MEETING_REVIEW -> {
@@ -117,6 +130,7 @@ public class Notification extends BaseSchema {
         MEETING_JOIN(MeetingJoinDetail.class),
         MEETING_LEAVE(MeetingLeaveDetail.class),
         MEETING_HOST_DELEGATE(MeetingHostDelegateDetail.class),
+        MEETING_SUCCESS(MeetingSuccessDetail.class),
         MEETING_REVIEW(MeetingReviewDetail.class),
         CHAT_MESSAGE(ChatMessageDetail.class),
         ;
