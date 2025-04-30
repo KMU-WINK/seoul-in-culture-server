@@ -39,6 +39,7 @@ public class FcmTokenRepositoryImpl implements FcmTokenRepository {
         List<FcmToken> results = operations.aggregate(
                 newAggregation(
                         match(where("token").is(token)),
+
                         lookup("user", "user.$id", "_id", "user"),
                         unwind("user", true)
                 ),

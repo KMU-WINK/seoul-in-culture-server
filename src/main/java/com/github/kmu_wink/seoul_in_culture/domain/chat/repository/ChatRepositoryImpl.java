@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.github.kmu_wink.seoul_in_culture.common.mongo.MongoConfig.LATEST_SORT;
+import static com.github.kmu_wink.seoul_in_culture.common.mongo.MongoConfig.OLDER_SORT;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.limit;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.lookup;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.match;
@@ -33,9 +34,6 @@ public class ChatRepositoryImpl implements ChatRepository {
         List<Chat> results = operations.aggregate(
                 newAggregation(
                         match(where("_id").is(chattingId)),
-
-                        sort(LATEST_SORT),
-                        limit(1),
 
                         lookup("meeting", "meeting.$id", "_id", "meeting"),
                         unwind("meeting"),
@@ -98,7 +96,7 @@ public class ChatRepositoryImpl implements ChatRepository {
                 newAggregation(
                         match(where("meeting").is(meeting)),
 
-                        sort(LATEST_SORT),
+                        sort(OLDER_SORT),
                         limit(1000),
 
                         lookup("meeting", "meeting.$id", "_id", "meeting"),

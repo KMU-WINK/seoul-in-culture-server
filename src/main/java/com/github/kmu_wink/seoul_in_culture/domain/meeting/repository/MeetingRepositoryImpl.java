@@ -39,10 +39,13 @@ public class MeetingRepositoryImpl implements MeetingRepository {
         List<Meeting> results = operations.aggregate(
                 newAggregation(
                         match(where("_id").is(meetingId)),
+
                         lookup("event", "event.$id", "_id", "event"),
                         unwind("event"),
+
                         lookup("user", "host.$id", "_id", "host"),
                         unwind("host"),
+
                         lookup("user", "participants.$id", "_id", "participants")
                 ), Meeting.class, Meeting.class
         ).getMappedResults();
