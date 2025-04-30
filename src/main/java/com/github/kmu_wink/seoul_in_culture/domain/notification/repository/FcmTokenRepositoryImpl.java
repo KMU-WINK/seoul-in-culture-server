@@ -40,7 +40,7 @@ public class FcmTokenRepositoryImpl implements FcmTokenRepository {
                 newAggregation(
                         match(where("token").is(token)),
                         lookup("user", "user.$id", "_id", "user"),
-                        unwind("user")
+                        unwind("user", true)
                 ),
                 FcmToken.class,
                 FcmToken.class
