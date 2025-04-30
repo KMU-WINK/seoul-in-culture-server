@@ -26,6 +26,7 @@ import java.util.Set;
 
 import static com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventExceptions.EVENT_NOT_FOUND;
 import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_ALREADY_JOINED;
+import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_DATE_OUT_OF_EVENT_PERIOD;
 import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_ENDED;
 import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_FULL;
 import static com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingExceptions.MEETING_HOST_CANNOT_LEAVE;
@@ -72,6 +73,10 @@ public class MeetingService {
     public GetMeetingResponse createMeeting(User user, String eventId, CreateMeetingRequest dto) {
 
         Event event = eventRepository.findById(eventId).orElseThrow(() -> EventException.of(EVENT_NOT_FOUND));
+
+        if (dto.date().toLocalDate().isBefore(event.getStartDate()) || dto.date().toLocalDate().isAfter(event.getEndDate())) {
+            throw MeetingException.of(MEETING_DATE_OUT_OF_EVENT_PERIOD);
+        }
 
         Meeting meeting = meetingRepository.save(Meeting.builder()
                 .event(event)

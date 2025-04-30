@@ -15,6 +15,7 @@ public enum MeetingExceptions {
     MEETING_NOT_SATISFIED("모임 조건에 충족하지 않습니다."),
     MEETING_ENDED("모임이 종료되었습니다."),
     MEETING_HOST_CANNOT_LEAVE("주최자는 모임을 나갈 수 없습니다."),
+    MEETING_DATE_OUT_OF_EVENT_PERIOD("모임 날짜가 행사 기간을 벗어났습니다."),
     ;
 
     private final String message;
