@@ -13,6 +13,7 @@ import com.github.kmu_wink.seoul_in_culture.domain.notification.api.Notification
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingHostDelegateDetail;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingJoinDetail;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingLeaveDetail;
+import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingSuccessDetail;
 import com.github.kmu_wink.seoul_in_culture.domain.user.exception.UserException;
 import com.github.kmu_wink.seoul_in_culture.domain.user.repository.UserRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
@@ -185,6 +186,13 @@ public class MeetingService {
         meeting.setEnd(true);
 
         meeting = meetingRepository.save(meeting);
+
+        Meeting finalMeeting = meeting;
+        meeting.getParticipants()
+                .forEach(participant -> notificationApi.sendNotification(
+                        participant,
+                        MeetingSuccessDetail.builder().meeting(finalMeeting).build()
+                ));
 
         return GetMeetingResponse.builder().meeting(meeting).build();
     }

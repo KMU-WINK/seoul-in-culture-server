@@ -28,7 +28,8 @@ public class NotificationApi {
         Notification notification = notificationRepository.save(Notification.builder()
                 .user(user)
                 .type(type)
-                .detail(detail)
+                .title(Notification.createTitle(type))
+                .body(Notification.createBody(type, detail))
                 .url(Notification.createUrl(type, detail))
                 .unread(true)
                 .build());

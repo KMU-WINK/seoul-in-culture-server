@@ -10,7 +10,7 @@ spring:
     mongodb:
       auto-index-creation: true
   lifecycle:
-    timeout-per-shutdown-phase: 5s
+    timeout-per-shutdown-phase: 1s
 
 springdoc:
   default-consumes-media-type: application/json
