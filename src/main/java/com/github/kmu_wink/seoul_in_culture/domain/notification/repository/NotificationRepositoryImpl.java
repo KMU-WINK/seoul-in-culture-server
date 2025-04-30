@@ -31,6 +31,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
         List<Notification> results = operations.aggregate(
                 Aggregation.newAggregation(
                         match(where("_id").is(id)),
+
                         lookup("user", "user.$id", "_id", "user"),
                         unwind("user"),
 
