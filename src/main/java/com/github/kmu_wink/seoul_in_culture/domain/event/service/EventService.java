@@ -25,12 +25,13 @@ public class EventService {
 
     public EventsResponse getEvents(
             LocalDate date,
+            String searchQuery,
             List<Event.Category> categories,
             List<User.District> districts,
             Boolean isFree
     ) {
 
-        List<Event> events = eventRepository.findAllWithFilter(date, categories, districts, isFree);
+        List<Event> events = eventRepository.findAllWithFilter(date, searchQuery, categories, districts, isFree);
         Map<String, Integer> countMap = meetingRepository.countByEvents(events);
 
         List<EventsResponse.EventDto> results = events.stream()

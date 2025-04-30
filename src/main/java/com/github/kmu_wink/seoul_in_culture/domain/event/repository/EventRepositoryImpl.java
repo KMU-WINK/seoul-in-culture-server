@@ -38,12 +38,17 @@ public class EventRepositoryImpl implements EventRepository {
     @Override
     public List<Event> findAllWithFilter(
             LocalDate date,
+            String searchQuery,
             List<Event.Category> categories,
             List<User.District> districts,
             Boolean isFree
     ) {
 
         Query query = new Query();
+
+        if (searchQuery != null && !searchQuery.isEmpty()) {
+            query.addCriteria(where("title").regex(searchQuery, "i"));
+        }
 
         if (date != null) {
             query.addCriteria(where("startDate").lte(date).and("endDate").gt(date));
