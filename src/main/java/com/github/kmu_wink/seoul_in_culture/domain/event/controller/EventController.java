@@ -30,12 +30,13 @@ public class EventController {
     @Operation(summary = "행사 목록")
     public ApiResponse<EventsResponse> getEvents(
             @RequestParam(required = false) LocalDate date,
+            @RequestParam(required = false) String searchQuery,
             @RequestParam(required = false) List<Event.Category> categories,
             @RequestParam(required = false) List<User.District> districts,
             @RequestParam(required = false) Boolean isFree
     ) {
 
-        return ApiResponse.ok(eventService.getEvents(date, categories, districts, isFree));
+        return ApiResponse.ok(eventService.getEvents(date, searchQuery, categories, districts, isFree));
     }
 
     @GetMapping("/{eventId}")

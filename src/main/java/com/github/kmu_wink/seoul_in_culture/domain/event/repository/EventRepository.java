@@ -15,6 +15,7 @@ public interface EventRepository {
     List<Event> findAll();
     List<Event> findAllWithFilter(
             LocalDate date,
+            String searchQuery,
             List<Event.Category> categories,
             List<User.District> districts,
             Boolean isFree
