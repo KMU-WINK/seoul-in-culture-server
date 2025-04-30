@@ -75,6 +75,7 @@ public class User extends BaseSchema {
         서초구,
         강남구,
         송파구,
-        강동구
+        강동구,
+        그외
     }
 }
