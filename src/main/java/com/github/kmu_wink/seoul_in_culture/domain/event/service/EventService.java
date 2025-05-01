@@ -53,4 +53,20 @@ public class EventService {
                 .event(event)
                 .build();
     }
+
+    public EventsResponse getAdvertisedEvent() {
+
+        List<Event> events = eventRepository.findTop5ByAdvertised();
+
+        Map<String, Integer> countMap = meetingRepository.countByEvents(events);
+
+        List<EventsResponse.EventDto> results = events.stream()
+                .map(event -> EventsResponse.EventDto.builder()
+                        .event(event)
+                        .meetings(countMap.getOrDefault(event.getId(), 0))
+                        .build())
+                .toList();
+
+        return EventsResponse.builder().events(results).build();
+    }
 }

@@ -3,6 +3,7 @@ package com.github.kmu_wink.seoul_in_culture.domain.event.repository;
 import com.github.kmu_wink.seoul_in_culture.domain.event.schema.Event;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
@@ -69,6 +70,15 @@ public class EventRepositoryImpl implements EventRepository {
         query.with(by(desc("startDate"), asc("endDate")));
         query.limit(1000);
 
+        return operations.find(query, Event.class);
+    }
+
+    @Override
+    public List<Event> findTop5ByAdvertised() {
+        Query query = new Query();
+        query.addCriteria(where("advertisedAt").ne(null));
+        query.with(Sort.by(desc("advertisedAt")));
+        query.limit(5);
         return operations.find(query, Event.class);
     }
 
