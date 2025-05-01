@@ -21,5 +21,7 @@ public interface EventRepository {
             Boolean isFree
     );
 
+    List<Event> findTop5ByAdvertised();
+
     Collection<Event> saveAll(Collection<Event> events);
 }

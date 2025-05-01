@@ -45,4 +45,11 @@ public class EventController {
 
         return ApiResponse.ok(eventService.getEvent(eventId));
     }
+
+    @GetMapping("/advertised")
+    @Operation(summary = "광고 중인 행사 목록")
+    public ApiResponse<EventsResponse> getAdvertisedEvent() {
+
+        return ApiResponse.ok(eventService.getAdvertisedEvent());
+    }
 }

@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -78,6 +79,9 @@ public class Event extends BaseSchema {
 
     @Nullable
     String other;
+
+    @Nullable
+    LocalDateTime advertisedAt;
 
     @SuppressWarnings("NonAsciiCharacters")
     public enum Category {
