@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/meeting")
 @RequiredArgsConstructor
@@ -79,10 +81,13 @@ public class MeetingController {
     @Operation(summary = "모임 참가")
     public ApiResponse<GetMeetingResponse> joinMeeting(
             @AuthenticationPrincipal User user,
-            @PathVariable String meetingId
+            @PathVariable String meetingId,
+            @RequestParam String orderId,
+            @RequestParam String paymentKey,
+            @RequestParam Integer amount
     ) {
 
-        return ApiResponse.ok(meetingService.joinMeeting(user, meetingId));
+        return ApiResponse.ok(meetingService.joinMeeting(user, meetingId, orderId, paymentKey, amount));
     }
 
     @AuthGuard
@@ -101,10 +106,11 @@ public class MeetingController {
     @Operation(summary = "[모임장] 모임 완료하기")
     public ApiResponse<GetMeetingResponse> finishMeeting(
             @AuthenticationPrincipal User user,
-            @PathVariable String meetingId
+            @PathVariable String meetingId,
+            @RequestParam List<String> attendant
     ) {
 
-        return ApiResponse.ok(meetingService.finishMeeting(user, meetingId));
+        return ApiResponse.ok(meetingService.finishMeeting(user, meetingId, attendant));
     }
 
     @AuthGuard

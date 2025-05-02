@@ -16,6 +16,8 @@ public enum MeetingExceptions {
     MEETING_ENDED("모임이 종료되었습니다."),
     MEETING_HOST_CANNOT_LEAVE("주최자는 모임을 나갈 수 없습니다."),
     MEETING_DATE_OUT_OF_EVENT_PERIOD("모임 날짜가 행사 기간을 벗어났습니다."),
+    MEETING_PAYMENT_FAIL("모임 참가 보증금 결제에 실패했습니다."),
+    MEETING_PAYMENT_NOT_EXISTS("모임 참가 보증금 결제 내역이 없습니다.")
     ;
 
     private final String message;

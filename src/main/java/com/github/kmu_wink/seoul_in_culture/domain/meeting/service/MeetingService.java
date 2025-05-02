@@ -1,5 +1,6 @@
 package com.github.kmu_wink.seoul_in_culture.domain.meeting.service;
 
+import com.github.kmu_wink.seoul_in_culture.common.toss.TossApi;
 import com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventException;
 import com.github.kmu_wink.seoul_in_culture.domain.event.repository.EventRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.event.schema.Event;
@@ -7,8 +8,10 @@ import com.github.kmu_wink.seoul_in_culture.domain.meeting.dto.request.CreateMee
 import com.github.kmu_wink.seoul_in_culture.domain.meeting.dto.response.GetMeetingResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.meeting.dto.response.GetMeetingsResponse;
 import com.github.kmu_wink.seoul_in_culture.domain.meeting.exception.MeetingException;
+import com.github.kmu_wink.seoul_in_culture.domain.meeting.repository.MeetingPaymentRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.meeting.repository.MeetingRepository;
 import com.github.kmu_wink.seoul_in_culture.domain.meeting.schema.Meeting;
+import com.github.kmu_wink.seoul_in_culture.domain.meeting.schema.MeetingPayment;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.api.NotificationApi;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingHostDelegateDetail;
 import com.github.kmu_wink.seoul_in_culture.domain.notification.schema.detail.MeetingJoinDetail;
@@ -22,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.github.kmu_wink.seoul_in_culture.domain.event.exception.EventExceptions.EVENT_NOT_FOUND;
@@ -43,8 +47,10 @@ public class MeetingService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final MeetingRepository meetingRepository;
+    private final MeetingPaymentRepository meetingPaymentRepository;
 
     private final NotificationApi notificationApi;
+    private final TossApi tossApi;
 
     public GetMeetingsResponse getMyMeetings(User user, boolean active) {
 
@@ -104,7 +110,7 @@ public class MeetingService {
         return GetMeetingResponse.builder().meeting(meeting).build();
     }
 
-    public GetMeetingResponse joinMeeting(User user, String meetingId) {
+    public GetMeetingResponse joinMeeting(User user, String meetingId, String orderId, String paymentKey, int amount) {
 
         Meeting meeting = meetingRepository.findById(meetingId).stream().peek(x -> {
             if (x.getParticipants().contains(user)) {
@@ -131,6 +137,14 @@ public class MeetingService {
                 throw MeetingException.of(MEETING_ENDED);
             }
         }).findFirst().orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+
+        String paymentKey2 = tossApi.confirmPayment(orderId, paymentKey, amount);
+
+        meetingPaymentRepository.save(MeetingPayment.builder()
+                .meeting(meeting)
+                .user(user)
+                .paymentKey(paymentKey2)
+                .build());
 
         meeting.getParticipants().add(user);
 
@@ -167,6 +181,7 @@ public class MeetingService {
             }
         }).findFirst().orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
+        refund(user, meeting);
         meeting.getParticipants().remove(user);
 
         Meeting finalMeeting = meeting;
@@ -181,7 +196,13 @@ public class MeetingService {
         return GetMeetingResponse.builder().meeting(meeting).build();
     }
 
-    public GetMeetingResponse finishMeeting(User user, String meetingId) {
+    public GetMeetingResponse finishMeeting(User user, String meetingId, List<String> attendantId) {
+
+        List<User> attendantUsers = attendantId.stream().map(userRepository::findById).peek(u -> {
+            if (u.isEmpty()) {
+                throw UserException.of(USER_NOT_FOUND);
+            }
+        }).map(Optional::get).toList();
 
         Meeting meeting = meetingRepository.findById(meetingId).stream().peek(x -> {
             if (!x.getParticipants().contains(user)) {
@@ -202,6 +223,8 @@ public class MeetingService {
         meeting = meetingRepository.save(meeting);
 
         Meeting finalMeeting = meeting;
+        attendantUsers.forEach(u -> refund(u, finalMeeting));
+
         meeting.getParticipants()
                 .forEach(participant -> notificationApi.sendNotification(
                         participant,
@@ -262,6 +285,16 @@ public class MeetingService {
             }
         }).findFirst().orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
 
+        meeting.getParticipants().forEach(u -> refund(u, meeting));
+
         meetingRepository.delete(meeting);
+    }
+
+    private void refund(User user, Meeting meeting) {
+
+        meetingPaymentRepository.findByUserAndMeeting(user, meeting).ifPresent(payment -> {
+            tossApi.refundPayment(payment.getPaymentKey());
+            meetingPaymentRepository.delete(payment);
+        });
     }
 }
