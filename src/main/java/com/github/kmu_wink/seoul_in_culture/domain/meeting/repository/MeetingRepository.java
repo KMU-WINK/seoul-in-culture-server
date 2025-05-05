@@ -4,6 +4,7 @@ import com.github.kmu_wink.seoul_in_culture.domain.event.schema.Event;
 import com.github.kmu_wink.seoul_in_culture.domain.meeting.schema.Meeting;
 import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -24,4 +25,6 @@ public interface MeetingRepository {
     Meeting save(Meeting meeting);
 
     void delete(Meeting meeting);
+
+    void clearExpiredBoosts(LocalDateTime beforeTime);
 }

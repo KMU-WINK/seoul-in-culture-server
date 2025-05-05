@@ -23,6 +23,7 @@ import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -296,5 +297,30 @@ public class MeetingService {
             tossApi.refundPayment(payment.getPaymentKey());
             meetingPaymentRepository.delete(payment);
         });
+    }
+
+    public GetMeetingResponse boostMeeting(User user, String meetingId, String orderId, String paymentKey, int amount) {
+
+        Meeting meeting = meetingRepository.findById(meetingId).stream().peek(x -> {
+            if (!x.getParticipants().contains(user)) {
+                throw MeetingException.of(MEETING_NOT_JOINED);
+            }
+        }).peek(x -> {
+            if (!x.getHost().equals(user)) {
+                throw MeetingException.of(MEETING_NOT_OWNER);
+            }
+        }).peek(x -> {
+            if (x.isEnd()) {
+                throw MeetingException.of(MEETING_ENDED);
+            }
+        }).findFirst().orElseThrow(() -> MeetingException.of(MEETING_NOT_FOUND));
+
+        tossApi.confirmPayment(orderId, paymentKey, amount);
+
+        meeting.setBoostedAt(LocalDateTime.now());
+
+        meeting = meetingRepository.save(meeting);
+
+        return GetMeetingResponse.builder().meeting(meeting).build();
     }
 }

@@ -6,11 +6,14 @@ import com.github.kmu_wink.seoul_in_culture.domain.user.schema.User;
 import com.mongodb.DBRef;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -19,6 +22,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.github.kmu_wink.seoul_in_culture.common.mongo.MongoConfig.LATEST_SORT;
+import static org.springframework.data.domain.Sort.Order.by;
+import static org.springframework.data.domain.Sort.Order.desc;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.lookup;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.match;
@@ -32,6 +37,8 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 public class MeetingRepositoryImpl implements MeetingRepository {
 
     private final MongoOperations operations;
+
+    private Sort boostedThenLatest = Sort.by(Sort.Order.desc("boostedAt")).and(LATEST_SORT);
 
     @Override
     public Optional<Meeting> findById(String meetingId) {
@@ -64,7 +71,7 @@ public class MeetingRepositoryImpl implements MeetingRepository {
                 newAggregation(
                         match(where("host").is(user)),
 
-                        sort(LATEST_SORT),
+                        sort(boostedThenLatest),
 
                         lookup("event", "event.$id", "_id", "event"), unwind("event"),
 
@@ -82,7 +89,7 @@ public class MeetingRepositoryImpl implements MeetingRepository {
                 newAggregation(
                         match(where("participants").in(user)),
 
-                        sort(LATEST_SORT),
+                        sort(boostedThenLatest),
 
                         lookup("event", "event.$id", "_id", "event"), unwind("event"),
 
@@ -100,7 +107,7 @@ public class MeetingRepositoryImpl implements MeetingRepository {
                 newAggregation(
                         match(where("participants").in(user).and("end").is(end)),
 
-                        sort(LATEST_SORT),
+                        sort(boostedThenLatest),
 
                         lookup("event", "event.$id", "_id", "event"), unwind("event"),
 
@@ -142,7 +149,7 @@ public class MeetingRepositoryImpl implements MeetingRepository {
                 newAggregation(
                         match(new Criteria().andOperator(criteriaList)),
 
-                        sort(LATEST_SORT),
+                        sort(boostedThenLatest),
 
                         lookup("event", "event.$id", "_id", "event"), unwind("event"),
 
@@ -187,5 +194,15 @@ public class MeetingRepositoryImpl implements MeetingRepository {
     public void delete(Meeting meeting) {
 
         operations.remove(meeting);
+    }
+
+    @Override
+    public void clearExpiredBoosts(LocalDateTime beforeTime) {
+
+        Query query = new Query(Criteria.where("boostedAt").lt(beforeTime));
+
+        Update update = new Update().unset("boostedAt");
+
+        operations.updateMulti(query, update, Meeting.class);
     }
 }

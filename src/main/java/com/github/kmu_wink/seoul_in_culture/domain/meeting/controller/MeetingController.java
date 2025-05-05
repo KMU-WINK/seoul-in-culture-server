@@ -134,4 +134,18 @@ public class MeetingController {
 
         return ApiResponse.ok();
     }
+
+    @AuthGuard
+    @PostMapping("/boost/{meetingId}")
+    @Operation(summary = "[모임장] 모임 부스트 하기")
+    public ApiResponse<GetMeetingResponse> boostMeeting(
+            @AuthenticationPrincipal User user,
+            @PathVariable String meetingId,
+            @RequestParam String orderId,
+            @RequestParam String paymentKey,
+            @RequestParam Integer amount
+    ) {
+
+        return ApiResponse.ok(meetingService.boostMeeting(user, meetingId, orderId, paymentKey, amount));
+    }
 }
