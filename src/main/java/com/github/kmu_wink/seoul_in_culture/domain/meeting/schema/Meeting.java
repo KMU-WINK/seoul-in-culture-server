@@ -55,4 +55,7 @@ public class Meeting extends BaseSchema {
     Set<User> participants;
 
     boolean end;
+
+    @Nullable
+    LocalDateTime boostedAt;
 }
