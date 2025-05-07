@@ -136,7 +136,7 @@ public class MeetingController {
     }
 
     @AuthGuard
-    @PostMapping("/boost/{meetingId}")
+    @PostMapping("/{meetingId}/boost")
     @Operation(summary = "[모임장] 모임 부스트 하기")
     public ApiResponse<GetMeetingResponse> boostMeeting(
             @AuthenticationPrincipal User user,
